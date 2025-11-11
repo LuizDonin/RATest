@@ -1,0 +1,27 @@
+{
+  "name": "teste",
+  "version": "1.0.0",
+  "description": "Aplicação de Realidade Aumentada: teste",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@ar-monorepo/ar-core": "*",
+    "@ar-monorepo/shared": "*",
+    "@ar-monorepo/ui": "*",
+    "aframe": "^1.7.1",
+    "aframe-react": "^4.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.37",
+    "@types/react-dom": "^18.2.15",
+    "@vitejs/plugin-react": "^4.1.1",
+    "typescript": "^5.2.2",
+    "vite": "^4.5.0"
+  }
+}

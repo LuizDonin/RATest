@@ -1,0 +1,111 @@
+/* Selfie Screen */
+.selfie-screen {
+    width: 100vw;
+    height: 100vh;
+    height: -webkit-fill-available;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: transparent;
+    z-index: 2;
+    overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Selfie Top Overlay */
+.selfie-top-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    pointer-events: none;
+}
+
+.selfie-top-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+}
+
+/* Selfie Bottom Overlay */
+.selfie-bottom-overlay {
+    position: absolute;
+    bottom: env(safe-area-inset-bottom);
+    left: 0;
+    width: 100%;
+    z-index: 3;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    pointer-events: none;
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.selfie-bottom-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: bottom;
+    display: block;
+}
+
+/* Selfie Camera Button */
+.selfie-camera-button {
+    position: absolute;
+    bottom: calc(30px + env(safe-area-inset-bottom));
+    right: 30px;
+    width: 70px;
+    height: 70px;
+    border: none;
+    background-color: transparent;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    z-index: 10;
+    transition: transform 0.2s ease;
+}
+
+.selfie-camera-button:hover {
+    transform: scale(1.1);
+}
+
+.selfie-camera-button:active {
+    transform: scale(0.95);
+}
+
+.selfie-camera-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Mobile styles for Selfie Screen */
+@media (max-width: 768px) {
+    .selfie-screen {
+        min-height: 100vh;
+        min-height: -webkit-fill-available;
+    }
+
+    .selfie-camera-button {
+        width: 60px;
+        height: 60px;
+        bottom: calc(20px + env(safe-area-inset-bottom));
+        right: 20px;
+    }
+
+    .selfie-top-img,
+    .selfie-bottom-img {
+        width: 100%;
+        height: auto;
+    }
+}

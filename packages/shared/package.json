@@ -1,0 +1,14 @@
+{
+  "name": "@ar-monorepo/shared",
+  "version": "1.0.0",
+  "description": "Tipos e utilitários compartilhados",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}
+

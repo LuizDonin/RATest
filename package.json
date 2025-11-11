@@ -1,0 +1,24 @@
+{
+  "name": "ar-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monorepo para aplicações de Realidade Aumentada",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "create-app": "node scripts/create-ar-app.js",
+    "dev": "node scripts/dev.js",
+    "list-apps": "node scripts/dev.js --list",
+    "build": "npm run build --workspaces"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.0",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

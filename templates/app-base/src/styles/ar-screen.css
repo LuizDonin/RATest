@@ -1,0 +1,359 @@
+/* AR Game Screen */
+.ar-game-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: -webkit-fill-available !important;
+    /* iOS Safari */
+    min-height: 100vh !important;
+    min-height: -webkit-fill-available !important;
+    /* iOS Safari */
+    /* Background padrão (fallback) - sem !important para permitir override inline */
+    background: transparent;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 1;
+}
+
+/* A-Frame Scene */
+.ar-scene-aframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    /* A-Frame abaixo de tudo */
+    background: transparent;
+    overflow: hidden;
+}
+
+/* A-Frame Scene no topo APENAS na tela de loading */
+.loading-screen~.ar-scene-aframe,
+body:has(.loading-screen) .ar-scene-aframe {
+    z-index: 10;
+}
+
+
+.ar-game-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    /* Canvas 2D do jogo - abaixo do A-Frame */
+    background: transparent !important;
+}
+
+/* Timer Container */
+.ar-timer-container {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 200px;
+    height: 80px;
+}
+
+.ar-timer-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.ar-timer-text {
+    position: relative;
+    z-index: 101;
+    color: rgb(0, 0, 0);
+    font-size: 1.8rem;
+    font-weight: 700;
+    left: 10%;
+    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+    font-family: "urbana", sans-serif;
+    font-size: 40px;
+}
+
+/* Barra de Progresso */
+.ar-progress-container {
+    position: absolute;
+    bottom: calc(20px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    max-width: 90vw;
+    padding: 0 10px;
+}
+
+.ar-progress-wrapper {
+    position: relative;
+    width: 280px;
+    max-width: 70vw;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 5px;
+}
+
+.ar-progress-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    z-index: 1;
+}
+
+.ar-progress-fill {
+    position: relative;
+    height: 80%;
+    background: linear-gradient(90deg, #4CAF50, #45a049);
+    transition: width 0.3s ease;
+    z-index: 2;
+    margin-left: 2%;
+    min-width: 0;
+    max-width: 90%;
+}
+
+.ar-progress-star {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+/* Responsive para telas menores */
+@media (max-width: 768px) {
+    .ar-progress-wrapper {
+        height: 35px;
+    }
+
+    .ar-progress-star {
+        width: 60px;
+        height: 60px;
+    }
+
+    .ar-progress-container {
+        gap: 8px;
+    }
+}
+
+/* Overlay de fundo que pisca ao acertar/errar */
+.ar-feedback-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 50;
+    pointer-events: none;
+    animation: feedbackFlash 0.5s ease-out;
+}
+
+@keyframes feedbackFlash {
+    0% {
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 0.8;
+    }
+
+    40% {
+        opacity: 0.3;
+    }
+
+    60% {
+        opacity: 0.7;
+    }
+
+    80% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Feedback */
+.ar-feedback {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 200;
+    animation: feedbackPop 0.5s ease-out;
+}
+
+.ar-feedback-image {
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
+}
+
+@keyframes feedbackPop {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.2);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+/* Pontuação */
+.ar-score {
+    position: absolute;
+    display: none;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    background: rgba(0, 0, 0, 0.5);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+/* AR Loading Overlay */
+.ar-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.ar-loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.ar-loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.ar-loading-text {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 600;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* AR Countdown Overlay */
+.ar-countdown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001;
+}
+
+.ar-countdown-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ar-countdown-number {
+    font-size: 8rem;
+    font-weight: 900;
+    color: white;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.5);
+    animation: countdownPulse 0.8s ease-out;
+    font-family: "urbana", sans-serif;
+}
+
+.ar-countdown-go {
+    font-size: 8rem;
+    font-weight: 900;
+    color: #4CAF50;
+    text-shadow: 0 0 20px rgba(76, 175, 80, 0.8), 0 0 40px rgba(76, 175, 80, 0.5);
+    animation: goPulse 0.5s ease-out;
+    font-family: "urbana", sans-serif;
+}
+
+@keyframes countdownPulse {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes goPulse {
+    0% {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.3);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

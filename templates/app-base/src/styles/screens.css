@@ -1,0 +1,144 @@
+/* Base Styles */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  background: #000;
+}
+
+/* Screen Manager */
+.screen-manager {
+  width: 100vw;
+  height: 100vh;
+  min-width: 100vw;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  /* iOS Safari */
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+  transition: all 0.3s ease-in-out;
+  background: #000;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.screen-manager.transitioning {
+  pointer-events: none;
+}
+
+/* ===== TRANSIÇÕES FADE ===== */
+.transition-fade {
+  opacity: 1;
+}
+
+.transition-fade.transitioning {
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pausar todas as animações durante transição para evitar conflitos */
+.transition-fade.transitioning * {
+  animation-play-state: paused !important;
+}
+
+/* ===== TRANSIÇÕES SLIDE HORIZONTAL ===== */
+.transition-slide-horizontal {
+  transform: translateX(0);
+}
+
+.transition-slide-horizontal.direction-right.transitioning {
+  transform: translateX(-100%);
+}
+
+.transition-slide-horizontal.direction-left.transitioning {
+  transform: translateX(100%);
+}
+
+/* ===== TRANSIÇÕES SLIDE VERTICAL ===== */
+.transition-slide-vertical {
+  transform: translateY(0);
+}
+
+.transition-slide-vertical.direction-down.transitioning {
+  transform: translateY(-100%);
+}
+
+.transition-slide-vertical.direction-up.transitioning {
+  transform: translateY(100%);
+}
+
+/* ===== TRANSIÇÕES SLIDE UP/DOWN ===== */
+.transition-slide-up {
+  transform: translateY(0);
+}
+
+.transition-slide-up.transitioning {
+  transform: translateY(100%);
+}
+
+.transition-slide-down {
+  transform: translateY(0);
+}
+
+.transition-slide-down.transitioning {
+  transform: translateY(-100%);
+}
+
+/* ===== TRANSIÇÕES ZOOM ===== */
+.transition-zoom-in {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.transition-zoom-in.transitioning {
+  transform: scale(0.8);
+  opacity: 0;
+}
+
+.transition-zoom-out {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.transition-zoom-out.transitioning {
+  transform: scale(1.2);
+  opacity: 0;
+}
+
+/* ===== TRANSIÇÃO FLIP ===== */
+.transition-flip {
+  transform: rotateY(0deg);
+  transform-style: preserve-3d;
+}
+
+.transition-flip.transitioning {
+  transform: rotateY(90deg);
+}
+
+/* ===== TRANSIÇÃO NONE ===== */
+.transition-none {
+  transition: none;
+}
+
+.transition-none.transitioning {
+  /* Sem transição visual */
+  opacity: 1;
+}
+
+/* Transições de Slide Horizontal */
+.screen-manager.slide-right {
+  transform: translateX(0);
+}
+
+.screen-manager.slide-left {
+  transform: translateX(0);
+}

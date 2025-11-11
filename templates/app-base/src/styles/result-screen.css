@@ -1,0 +1,195 @@
+/* Result Screen */
+.result-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: -webkit-fill-available !important;
+    /* iOS Safari */
+    min-height: 100vh !important;
+    min-height: -webkit-fill-available !important;
+    /* iOS Safari */
+    /* Background padrão (fallback) - sem !important para permitir override inline */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 1;
+}
+
+
+.result-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px;
+    margin: auto;
+    z-index: 3;
+    position: relative;
+    gap: 0;
+}
+
+.result-modal-image {
+    width: 100%;
+    max-width: 400px;
+    height: auto;
+    margin: 0 auto 30px;
+    display: block;
+    opacity: 0;
+    transform: translateY(-50px);
+    animation: modalSlideDown 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.6s forwards;
+}
+
+@keyframes modalSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.9);
+    }
+
+    60% {
+        transform: translateY(5px) scale(1.05);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.result-modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+    max-width: 400px;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    padding: 0;
+}
+
+.result-button {
+    width: auto;
+    height: auto;
+    min-width: 200px;
+    min-height: 60px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s ease;
+    opacity: 0;
+    transform: scale(0);
+}
+
+/* Primeiro botão aparece depois do modal */
+.result-button-registrar {
+    animation: buttonGrowIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.2s forwards,
+        buttonPulse 2s ease-in-out 2s infinite;
+}
+
+/* Segundo botão aparece depois do primeiro */
+.result-button-inicio {
+    animation: buttonGrowIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.5s forwards,
+        buttonPulse 2s ease-in-out 2.3s infinite;
+}
+
+/* Botão voltar (erro) aparece depois do modal */
+.result-button-voltar {
+    animation: buttonGrowIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 1.2s forwards,
+        buttonPulse 2s ease-in-out 2s infinite;
+}
+
+@keyframes buttonGrowIn {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    60% {
+        transform: scale(1.1);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes buttonPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.result-button:hover {
+    transform: scale(1.05);
+}
+
+.result-button:active {
+    transform: scale(0.95);
+    animation-play-state: paused;
+}
+
+.result-button-registrar,
+.result-button-inicio,
+.result-button-voltar {
+    width: auto;
+    height: auto;
+}
+
+/* Mobile styles for Result Screen */
+@media (max-width: 768px) {
+
+    .result-content {
+        max-width: 95%;
+        gap: 0;
+    }
+
+    .result-modal-image {
+        max-width: 90%;
+        margin-bottom: 25px;
+    }
+
+    .result-modal-buttons {
+        flex-direction: column;
+        gap: 15px;
+        width: 100%;
+        max-width: 90%;
+    }
+
+    .result-button {
+        width: auto;
+        height: auto;
+        min-width: 180px;
+        min-height: 60px;
+    }
+
+    .result-button-registrar,
+    .result-button-inicio,
+    .result-button-voltar {
+        width: auto;
+        height: auto;
+        min-width: 180px;
+        min-height: 60px;
+    }
+}

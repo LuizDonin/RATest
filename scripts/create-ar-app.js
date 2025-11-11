@@ -1,0 +1,202 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const path = require('path')
+const { execSync } = require('child_process')
+
+function createARApp(appName) {
+  const templateDir = path.join(__dirname, '../templates/app-base')
+  const appsDir = path.join(__dirname, '../apps')
+  const targetDir = path.join(appsDir, appName)
+
+  // Verificar se o nome da aplicação foi fornecido
+  if (!appName) {
+    console.error('❌ Erro: Nome da aplicação é obrigatório')
+    console.log('Uso: node create-ar-app.js <nome-da-app>')
+    process.exit(1)
+  }
+
+  // Verificar se a aplicação já existe
+  if (fs.existsSync(targetDir)) {
+    console.error(`❌ Erro: A aplicação "${appName}" já existe`)
+    process.exit(1)
+  }
+
+  try {
+    console.log(`🚀 Criando aplicação de RA: ${appName}`)
+
+    // Criar diretório da aplicação
+    fs.mkdirSync(targetDir, { recursive: true })
+
+    // Função para copiar arquivos recursivamente
+    function copyDirectory(src, dest) {
+      if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true })
+      }
+
+      const items = fs.readdirSync(src)
+      
+      for (const item of items) {
+        const srcPath = path.join(src, item)
+        const destPath = path.join(dest, item)
+        
+        if (fs.statSync(srcPath).isDirectory()) {
+          copyDirectory(srcPath, destPath)
+        } else {
+          fs.copyFileSync(srcPath, destPath)
+        }
+      }
+    }
+
+    // Função para copiar arquivos ocultos também
+    function copyHiddenFiles(src, dest) {
+      const items = fs.readdirSync(src, { withFileTypes: true })
+      
+      for (const item of items) {
+        if (item.isFile() && item.name.startsWith('.')) {
+          const srcPath = path.join(src, item.name)
+          const destPath = path.join(dest, item.name)
+          fs.copyFileSync(srcPath, destPath)
+        }
+      }
+    }
+
+    // Copiar template para o diretório da aplicação
+    copyDirectory(templateDir, targetDir)
+    
+    // Copiar arquivos ocultos
+    copyHiddenFiles(templateDir, targetDir)
+
+    // Atualizar package.json com o nome correto
+    const packageJsonPath = path.join(targetDir, 'package.json')
+    const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'))
+    packageJson.name = appName
+    packageJson.description = `Aplicação de Realidade Aumentada: ${appName}`
+    fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
+
+    // Atualizar título no HTML
+    const htmlPath = path.join(targetDir, 'index.html')
+    let htmlContent = fs.readFileSync(htmlPath, 'utf8')
+    htmlContent = htmlContent.replace(/<title>.*<\/title>/, `<title>${appName}</title>`)
+    fs.writeFileSync(htmlPath, htmlContent)
+
+    // Criar README.md para a aplicação
+    const readmeContent = `# ${appName}
+
+Aplicação de Realidade Aumentada criada com o AR Monorepo.
+
+## Desenvolvimento
+
+\`\`\`bash
+npm run dev
+\`\`\`
+
+## Build
+
+\`\`\`bash
+npm run build
+\`\`\`
+
+## Preview
+
+\`\`\`bash
+npm run preview
+\`\`\`
+
+## Funcionalidades
+
+- 🌐 Sistema de telas com transições animadas avançadas
+- 🔒 Detecção de orientação landscape com bloqueio automático
+- 🎮 Controles de Realidade Aumentada
+- ⚙️ Tela de configurações personalizáveis
+- ℹ️ Tela sobre a aplicação
+- 📖 Tutorial interativo com instruções de uso
+- 📊 Carregamento automático de dados do RA
+- 🎨 Sistema de transições (fade, slide, zoom, flip)
+
+## Estrutura
+
+\`\`\`
+src/
+├── components/          # Componentes React
+│   ├── screens/        # Telas da aplicação
+│   ├── LandscapeBlocker.tsx  # Bloqueador de landscape
+│   ├── RADataDisplay.tsx     # Exibição de dados do RA
+│   └── ...
+├── contexts/           # Contextos React
+│   └── RAContext.tsx   # Contexto para dados do RA
+├── hooks/              # Hooks customizados
+├── types/              # Definições de tipos TypeScript
+├── utils/              # Utilitários
+└── styles/             # Estilos CSS
+
+public/
+├── assets/
+│   ├── images/         # Imagens da aplicação
+│   └── data/
+│       └── ra.json     # Dados do RA
+\`\`\`
+
+## Sistema de Transições
+
+A aplicação inclui um sistema avançado de transições entre telas:
+
+- **fade** - Transição com fade in/out
+- **slide-horizontal/vertical** - Deslizar com direção automática
+- **zoom-in/out** - Efeitos de zoom suaves
+- **flip** - Rotação 3D no eixo Y
+- **none** - Sem transição
+
+### Configuração de Transições
+\`\`\`typescript
+<ScreenManager 
+  defaultTransition="zoom-out"
+  defaultDirection="right"
+/>
+\`\`\`
+
+## Bloqueio de Orientação
+
+A aplicação inclui um sistema automático de bloqueio de orientação landscape que:
+
+- Detecta dispositivos móveis inteligentemente
+- Bloqueia o uso em orientação landscape
+- Mostra uma tela de aviso com ícones de rotação animados
+- Permite o uso apenas em orientação retrato
+- Suporte a múltiplos eventos de orientação
+
+## Dados do RA
+
+A aplicação carrega automaticamente os dados do arquivo \`/assets/data/ra.json\` e os disponibiliza em todas as telas através do contexto React.
+
+## Tecnologias
+
+- React 18
+- TypeScript
+- Three.js
+- Vite
+- WebXR (para RA)
+`
+
+    fs.writeFileSync(path.join(targetDir, 'README.md'), readmeContent)
+
+    console.log(`✅ Aplicação "${appName}" criada com sucesso!`)
+    console.log(`📁 Localização: ${targetDir}`)
+    console.log('\n📋 Próximos passos:')
+    console.log(`   cd apps/${appName}`)
+    console.log('   npm install')
+    console.log('   npm run dev')
+
+  } catch (error) {
+    console.error('❌ Erro ao criar aplicação:', error.message)
+    process.exit(1)
+  }
+}
+
+// Executar se chamado diretamente
+if (require.main === module) {
+  const appName = process.argv[2]
+  createARApp(appName)
+}
+
+module.exports = { createARApp }

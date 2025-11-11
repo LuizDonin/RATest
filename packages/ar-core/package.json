@@ -1,0 +1,14 @@
+{
+  "name": "@ar-monorepo/ar-core",
+  "version": "1.0.0",
+  "description": "Core da funcionalidade de Realidade Aumentada",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}
+

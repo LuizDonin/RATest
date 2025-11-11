@@ -1,0 +1,196 @@
+/* Cover Screen */
+.cover-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: -webkit-fill-available !important;
+    /* iOS Safari */
+    min-height: 100vh !important;
+    min-height: -webkit-fill-available !important;
+    /* iOS Safari */
+    /* Background padrão (fallback) - sem !important para permitir override inline */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 1;
+}
+
+/* Cover Header Image */
+.cover-header-image {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    transform: translateY(-100%);
+}
+
+/* Animar header apenas quando a cover estiver visível e não em transição */
+.screen-manager:not(.transitioning) .cover-header-image {
+    animation: slideDownIn 0.8s ease-out 1s forwards;
+}
+
+/* Resetar animação quando entrar em nova transição */
+.screen-manager.transitioning .cover-header-image {
+    animation: none;
+}
+
+.cover-header-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: top;
+    display: block;
+}
+
+/* Cover Bottom Image */
+.cover-bottom-image {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    transform: translateY(100%);
+    height: -webkit-fill-available;
+    /* iOS Safari */
+    min-height: -webkit-fill-available;
+}
+
+/* Animar bottom apenas quando a cover estiver visível e não em transição */
+.screen-manager:not(.transitioning) .cover-bottom-image {
+    animation: slideUpIn 0.8s ease-out 1s forwards;
+}
+
+/* Resetar animação quando entrar em nova transição */
+.screen-manager.transitioning .cover-bottom-image {
+    animation: none;
+}
+
+.cover-bottom-img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    object-position: bottom;
+    display: block;
+}
+
+/* Animations for Cover Images */
+@keyframes slideDownIn {
+    from {
+        transform: translateY(-100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUpIn {
+    from {
+        transform: translateY(100%);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+.cover-content {
+    text-align: center;
+    z-index: 3;
+    position: relative;
+    margin: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Botão Jogar */
+.cover-button-jogar {
+    width: 300px;
+    height: 100px;
+    border: none;
+    background-color: transparent;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    margin-top: 150px;
+    z-index: 10;
+    min-width: 250px;
+    max-width: 80%;
+    aspect-ratio: 3/1;
+    opacity: 1;
+    transform: scale(0);
+    animation: buttonGrowIn 0.8s ease-out 1.2s forwards,
+        buttonPulse 2s ease-in-out 2s infinite;
+}
+
+.cover-button-jogar:hover {
+    animation: buttonGrowIn 0.8s ease-out 1.2s forwards,
+        buttonPulseHover 1.5s ease-in-out 2s infinite;
+}
+
+.cover-button-jogar:active {
+    transform: scale(0.95);
+}
+
+@keyframes buttonGrowIn {
+    from {
+        opacity: 0;
+        transform: scale(0);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes buttonPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes buttonPulseHover {
+
+    0%,
+    100% {
+        transform: scale(1.05);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}

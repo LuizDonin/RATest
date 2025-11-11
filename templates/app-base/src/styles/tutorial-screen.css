@@ -1,0 +1,215 @@
+/* Tutorial Screen */
+.tutorial-screen {
+    width: 100vw !important;
+    height: 100vh !important;
+    height: -webkit-fill-available !important;
+    /* iOS Safari */
+    min-height: 100vh !important;
+    min-height: -webkit-fill-available !important;
+    /* iOS Safari */
+    /* Background padrão (fallback) - sem !important para permitir override inline */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    z-index: 1 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Container da imagem do painel tutorial */
+.tutorial-panel-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, calc(-50% - 200%));
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 90%;
+    max-width: 800px;
+}
+
+/* Animar container apenas quando a tela estiver visível (não em transição) */
+.screen-manager:not(.transitioning) .tutorial-panel-container {
+    animation: slideDownInCenter 0.8s ease-out 0.3s forwards;
+}
+
+/* Resetar animação quando entrar em nova transição */
+.screen-manager.transitioning .tutorial-panel-container {
+    animation: none;
+}
+
+.tutorial-panel-image {
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+    margin-bottom: 100px;
+}
+
+
+
+/* Container do botão */
+.tutorial-button-container {
+    position: absolute;
+    bottom: calc(150px + env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Botão Começar */
+.tutorial-button-comecar {
+    width: 300px;
+    height: 100px;
+    border: none;
+    background-color: transparent;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+    padding: 0;
+    margin: 0;
+    min-width: 250px;
+    max-width: 80%;
+    aspect-ratio: 3/1;
+    transition: transform 0.2s ease;
+    transform: scale(0);
+    animation: buttonGrowIn 0.8s ease-out 0.5s forwards,
+        buttonPulse 2s ease-in-out 1.3s infinite;
+}
+
+.tutorial-button-comecar:hover {
+    animation: buttonGrowIn 0.8s ease-out 0.5s forwards,
+        buttonPulseHover 1.5s ease-in-out 1.3s infinite;
+}
+
+.tutorial-button-comecar:active {
+    transform: scale(0.95);
+}
+
+.tutorial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.tutorial-skip {
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    color: white;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tutorial-skip:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.tutorial-progress {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.progress-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+}
+
+.progress-dot.active {
+    background: white;
+    transform: scale(1.2);
+}
+
+.tutorial-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.tutorial-step {
+    text-align: center;
+    max-width: 500px;
+}
+
+.step-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.step-description {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.step-image {
+    margin: 2rem 0;
+}
+
+.step-image img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.tutorial-footer {
+    padding: 2rem;
+    text-align: center;
+}
+
+.tutorial-button {
+    padding: 1rem 2rem;
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    border: none;
+    border-radius: 8px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.tutorial-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+/* Animação para o painel tutorial descer de cima */
+@keyframes slideDownInCenter {
+    from {
+        transform: translate(-50%, calc(-50% - 200%));
+    }
+
+    to {
+        transform: translate(-50%, -50%);
+    }
+}
