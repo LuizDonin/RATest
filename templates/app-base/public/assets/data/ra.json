@@ -4,9 +4,9 @@
         "codigo": "ARCO"
     },
     "configuracoes": {
-        "usarAFrame": false,
+        "usarAFrame": true,
         "usarVideo": true,
-        "usarFaceTracking": true,
+        "usarFaceTracking": false,
         "cameraFacing": "user"
     }
 }

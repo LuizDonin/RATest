@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/teste-aframe-ar/' : '/',
+  base: process.env.VITE_BASE_PATH || (process.env.NODE_ENV === 'production' ? '/ra/' : '/'),
   plugins: [react()],
   resolve: {
     alias: {

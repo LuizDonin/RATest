@@ -56,7 +56,7 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({
       <div className="tutorial-button-container">
         <button
           className="tutorial-button-comecar"
-          onClick={() => onNavigate('rocket', 'fade', 'right')}
+          onClick={() => onNavigate('ar', 'fade', 'right')}
           style={{
             backgroundImage: `url("${btnComecarImage}")`,
             backgroundSize: 'contain',
