@@ -15,8 +15,9 @@ interface ARScreenProps {
 
 const PELICANO_INITIAL_POSITION = { x: 0, y: 1.6, z: -3 }
 
+// Parâmetro: raio do círculo de referência do binóculo em px
 const DEBUG_CIRCLE_RADIUS_PX = 80
-const DEBUG_CIRCLE_RADIUS_PX_SECOND = 80
+const DEBUG_CIRCLE_RADIUS_PX_SECOND = 80 // Pode ajustar o tamanho caso deseje
 
 const PELICANO_INITIAL_SCALE = 1
 const PELICANO_MAX_SCALE = 2
@@ -44,19 +45,24 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     handleKeyUp: ((e: KeyboardEvent) => void) | null
   }>({ handleKeyDown: null, handleKeyUp: null })
 
+  // -- Círculo de debug dos binóculos (em relação ao binóculos, não mais à janela)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const binoculosImgRef = useRef<HTMLImageElement | null>(null)
   const [binoculosRect, setBinoculosRect] = useState<{left: number, top: number, width: number, height: number} | null>(null)
   const lastIsInsideRef = useRef<boolean>(false)
   const lastIsInsideRefRight = useRef<boolean>(false)
 
-  const pelicanoTimerRef = useRef<number>(0)
+  // Novos: refs para timer e scale (imperativo)
+  const pelicanoTimerRef = useRef<number>(0) // tempo dentro do círculo, em segundos
   const pelicanoTimerStartRef = useRef<number | null>(null)
-  const pelicanoScalingRef = useRef<boolean>(false)
-  const pelicanoLastInCircleRef = useRef<boolean>(false)
+  const pelicanoScalingRef = useRef<boolean>(false) // indica se está em processo de scale
+  const pelicanoLastInCircleRef = useRef<boolean>(false) // true se estava dentro de qualquer círculo no último frame
   const pelicanoScaleRef = useRef<number>(PELICANO_INITIAL_SCALE)
+
+  // Para garantir condição de exibir o botão "começar" apenas uma vez se for necessário
   const buttonAlreadySpawnedRef = useRef<boolean>(false)
 
+  // O círculo fica agora no centro do binóculo.
   const getDebugCircleProps = useCallback(() => {
     if (binoculosRect) {
       return {
@@ -72,6 +78,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     }
   }, [binoculosRect])
 
+  // NOVO: função para círculo mais à direita do binóculos
   const getDebugCirclePropsRight = useCallback(() => {
     if (binoculosRect) {
       return {
@@ -87,6 +94,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     }
   }, [binoculosRect])
 
+  // Atualiza o bounding box do binóculos sempre que ele muda ou quando tela redimensiona
   useEffect(() => {
     function updateRect() {
       if (binoculosImgRef.current) {
@@ -99,6 +107,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         })
       }
     }
+    // Atualizar em resize/orientação
     window.addEventListener('resize', updateRect)
     window.addEventListener('orientationchange', updateRect)
     updateRect()
@@ -120,6 +129,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
           height: rect.height,
         })
       }
+      // Observador para o clique inicial (em load) e para qualquer mudança
       updateRect()
       const observer = new window.ResizeObserver(updateRect)
       observer.observe(binoculosImgRef.current)
@@ -167,7 +177,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     setupCamera()
 
     return () => {
-      // Deixe o vídeo para o FaceTracker
+      // Não limpar aqui - deixar o vídeo para o FaceTracker
     }
   }, [usarVideo])
 
@@ -186,8 +196,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     return `${baseUrl}/${cleanPath}`
   }, [baseUrl])
 
-  // Corrigido: loop sempre lê a posição ATUAL do pelicano da entidade a-entity,
-  // funcionando tanto por teclado (desktop/dev) quanto atualização AR (celular/mobile)
+  // Adiciona imagem dos binóculos nos assets apenas (não mais na cena 3D)
   useEffect(() => {
     if (!usarAFrame) return
 
@@ -197,7 +206,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       return
     }
 
-    // Setup da cena e entidades, igual ao código anterior
+    // Adicionar câmera
     let camera = document.getElementById('camera')
     if (!camera) {
       camera = document.createElement('a-entity')
@@ -209,6 +218,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       sceneEl.appendChild(camera)
     }
 
+    // Adicionar luzes
     let ambientLight = sceneEl.querySelector('#ambient-light')
     if (!ambientLight) {
       ambientLight = document.createElement('a-entity')
@@ -226,6 +236,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       sceneEl.appendChild(directionalLight)
     }
 
+    // Adicionar head-cube (seguir rotação da cabeça)
     let headCube = document.getElementById('head-cube')
     if (!headCube) {
       headCube = document.createElement('a-entity')
@@ -237,12 +248,14 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       sceneEl.appendChild(headCube)
     }
 
+    // Adicionar assets caso não existam
     let assets = sceneEl.querySelector('a-assets')
     if (!assets) {
       assets = document.createElement('a-assets')
       sceneEl.appendChild(assets)
     }
 
+    // Pelicano (mantido)
     let pelicanoImg = assets.querySelector('#pelicanoTexture')
     if (!pelicanoImg) {
       pelicanoImg = document.createElement('img')
@@ -252,6 +265,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       assets.appendChild(pelicanoImg)
     }
 
+    // Binóculos asset (mantido apenas para referência; imagem real será na tela, não mais como a-image)
     let binoculosImg = assets.querySelector('#binoculosTexture')
     if (!binoculosImg) {
       binoculosImg = document.createElement('img')
@@ -261,6 +275,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       assets.appendChild(binoculosImg)
     }
 
+    // Pelicano entity
     let pelicano = document.getElementById('pelicano-entity')
     if (!pelicano) {
       pelicano = document.createElement('a-image')
@@ -270,6 +285,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       pelicano.setAttribute('height', '0.8')
       pelicano.setAttribute('position', `${PELICANO_INITIAL_POSITION.x} ${PELICANO_INITIAL_POSITION.y} ${PELICANO_INITIAL_POSITION.z}`)
       pelicano.setAttribute('look-at', '[camera]')
+      // Inicializa escala no valor inicial
       pelicano.setAttribute('scale', `${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE}`)
       sceneEl.appendChild(pelicano)
       pelicanoPositionRef.current = { ...PELICANO_INITIAL_POSITION }
@@ -283,11 +299,16 @@ export const ARScreen: React.FC<ARScreenProps> = ({
           y: typeof y === 'number' && !isNaN(y) ? y : PELICANO_INITIAL_POSITION.y,
           z: typeof z === 'number' && !isNaN(z) ? z : PELICANO_INITIAL_POSITION.z
         }
+      } else {
+        pelicanoPositionRef.current = { ...PELICANO_INITIAL_POSITION }
+        pelicano.setAttribute('position', `${PELICANO_INITIAL_POSITION.x} ${PELICANO_INITIAL_POSITION.y} ${PELICANO_INITIAL_POSITION.z}`)
       }
+      // Inicializa a escala do pelicano ao valor inicial na reinstanciação
       pelicano.setAttribute('scale', `${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE}`)
       pelicanoScaleRef.current = PELICANO_INITIAL_SCALE
     }
 
+    // REMOVE binoculos-entity (não mais na cena 3D)
     const binoculosOld = document.getElementById('binoculos-entity')
     if (binoculosOld) {
       binoculosOld.remove()
@@ -303,6 +324,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         pelicanoKeysRef.current[key.toLowerCase()] = true
       }
     }
+
     const handleKeyUp = (e: KeyboardEvent) => {
       let key = e.key
       if (key === 'PageUp' || key === 'PageDown') {
@@ -311,39 +333,15 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         pelicanoKeysRef.current[key.toLowerCase()] = false
       }
     }
+
     pelicanoHandlersRef.current.handleKeyDown = handleKeyDown
     pelicanoHandlersRef.current.handleKeyUp = handleKeyUp
 
-    // Corrigido: pega sempre .x, .y, .z com verificação robusta para evitar erro TS
-    function updatePelicanoPositionFromEntity() {
-      const pelicanoEl = document.getElementById('pelicano-entity')
-      if (pelicanoEl) {
-        const pos = pelicanoEl.getAttribute('position')
-        let px: number, py: number, pz: number;
-        if (
-          pos &&
-          typeof pos === 'object' &&
-          'x' in pos && 'y' in pos && 'z' in pos
-        ) {
-          px = Number((pos as {x: any, y: any, z: any}).x)
-          py = Number((pos as {x: any, y: any, z: any}).y)
-          pz = Number((pos as {x: any, y: any, z: any}).z)
-        } else if (typeof pos === 'string') {
-          const [x, y, z] = pos.split(' ').map(Number)
-          px = typeof x === 'number' && !isNaN(x) ? x : PELICANO_INITIAL_POSITION.x
-          py = typeof y === 'number' && !isNaN(y) ? y : PELICANO_INITIAL_POSITION.y
-          pz = typeof z === 'number' && !isNaN(z) ? z : PELICANO_INITIAL_POSITION.z
-        } else {
-          return
-        }
-        pelicanoPositionRef.current = { x: px, y: py, z: pz }
-      }
-    }
-
+    // --- Projeção do pelicano para tela/círculo de debug
     const projectPelicanoToScreen = (pelicanoPosition: {x:number, y:number, z:number}) => {
       const cameraY = 1.6
       const cameraPos = [0, cameraY, 0]
-      const fov = 80 * Math.PI / 180
+      const fov = 80 * Math.PI / 180 // em radianos
       const aspect = window.innerWidth / window.innerHeight
 
       const relX = pelicanoPosition.x - cameraPos[0]
@@ -352,7 +350,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
 
       if (relZ >= 0) return null
 
-      const projectionPlaneZ = 1
+      const projectionPlaneZ = 1 // unitária para facilitar escala
       const scale = projectionPlaneZ / -relZ
       const projectedX = relX * scale
       const projectedY = relY * scale
@@ -361,7 +359,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       const screenHalfWidth = screenHalfHeight * aspect
 
       const ndcX = projectedX / screenHalfWidth
-      const ndcY = -projectedY / screenHalfHeight
+      const ndcY = -projectedY / screenHalfHeight // - pois tela y cresce para baixo
 
       const screenX = ((ndcX + 1) / 2) * window.innerWidth
       const screenY = ((ndcY + 1) / 2) * window.innerHeight
@@ -369,21 +367,20 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       return { x: screenX, y: screenY }
     }
 
-    // Loop principal: sempre atualiza a posição do pelicano a partir do entity (mesmo sem WASD)
-    const animationLoop = (nowTs?: number) => {
+    // -- Loop principal da animação + detecção do círculo + scale
+    const movePelicano = (nowTs?: number) => {
       const pelicanoEl = document.getElementById('pelicano-entity')
       if (!pelicanoEl) {
         pelicanoMoveAnimationRef.current = null
         return
       }
 
-      // 1. Mover por teclado, se necessário
-      let moved = false
       let pos = pelicanoPositionRef.current
       let newX = pos.x
       let newY = pos.y
       let newZ = pos.z
 
+      let moved = false
       if (pelicanoKeysRef.current['w']) {
         newZ += moveSpeed
         moved = true
@@ -419,12 +416,9 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       if (moved) {
         pelicanoPositionRef.current = { x: newX, y: newY, z: newZ }
         pelicanoEl.setAttribute('position', `${newX} ${newY} ${newZ}`)
-      } else {
-        // Sempre pegar a posição ATUAL do entity (isso permite detectar RA dinâmico)
-        updatePelicanoPositionFromEntity()
       }
 
-      // 2. Detecção do pelicano nos círculos
+      // === 2D debug: projeta pelicano e verifica se colide com círculos relativos ao binóculo
       let isInside = false
       let isInsideR = false
 
@@ -435,6 +429,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
 
           const screenPt = projectPelicanoToScreen(pelicanoPositionRef.current)
 
+          // Desenha o círculo central do binóculos
           const {centerX, centerY, radius} = getDebugCircleProps()
           ctx.globalAlpha = 0.5
           ctx.beginPath()
@@ -444,6 +439,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
           ctx.stroke()
           ctx.globalAlpha = 1
 
+          // Desenha o segundo círculo mais para a direita
           const {centerX: rightX, centerY: rightY, radius: rightRadius} = getDebugCirclePropsRight()
           ctx.globalAlpha = 0.5
           ctx.beginPath()
@@ -453,12 +449,14 @@ export const ARScreen: React.FC<ARScreenProps> = ({
           ctx.stroke()
           ctx.globalAlpha = 1
 
+          // Desenha a posição projetada do pelicano
           if (screenPt) {
             ctx.beginPath()
             ctx.arc(screenPt.x, screenPt.y, 12, 0, Math.PI * 2)
             ctx.fillStyle = 'rgba(50,120,240,0.90)'
             ctx.fill()
 
+            // Checa se está dentro dos círculos
             const dx = screenPt.x - centerX
             const dy = screenPt.y - centerY
             const dist = Math.sqrt(dx*dx + dy*dy)
@@ -471,6 +469,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
               lastIsInsideRef.current = false
             }
 
+            // Círculo da direita
             const dxR = screenPt.x - rightX
             const dyR = screenPt.y - rightY
             const distR = Math.sqrt(dxR*dxR + dyR*dyR)
@@ -489,28 +488,39 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         }
       }
 
-      const isPelicanoInAnyCircle = isInside || isInsideR
+      // ================================
+      // --- Lógica do scale animado  ---
+      // ================================
+      const isPelicanoInAnyCircle = isInside || isInsideR;
+
       const now = typeof nowTs === 'number' ? nowTs : performance.now();
+      // now em ms, precisamos segundos para timer
 
       if (isPelicanoInAnyCircle) {
         if (!pelicanoLastInCircleRef.current) {
+          // Entrou em círculo: inicia timer
           pelicanoTimerStartRef.current = now
           pelicanoTimerRef.current = 0
           pelicanoScalingRef.current = true
         } else {
+          // Já está dentro, atualiza timer
           if (pelicanoTimerStartRef.current != null) {
-            pelicanoTimerRef.current = (now - pelicanoTimerStartRef.current) / 1000
+            pelicanoTimerRef.current = (now - pelicanoTimerStartRef.current) / 1000 // em segundos
           } else {
             pelicanoTimerRef.current = 0
           }
         }
+        // Calcula o novo scale proporcional
         let progress = Math.min(pelicanoTimerRef.current / PELICANO_SCALE_TIMER_DURATION, 1)
         let targetScale = PELICANO_INITIAL_SCALE + (PELICANO_MAX_SCALE - PELICANO_INITIAL_SCALE) * progress
 
+        // Aplica o scale no pelicano (A-Frame entity)
         if (pelicanoScaleRef.current !== targetScale) {
           pelicanoEl.setAttribute('scale', `${targetScale} ${targetScale} ${targetScale}`)
           pelicanoScaleRef.current = targetScale
         }
+
+        // ----------- Lógica para mostrar o botão "começar" -------------
         if (
           pelicanoTimerRef.current >= PELICANO_SCALE_TIMER_DURATION &&
           !buttonAlreadySpawnedRef.current
@@ -520,6 +530,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         }
       } else {
         if (pelicanoLastInCircleRef.current || pelicanoScalingRef.current) {
+          // Saiu dos círculos: reseta timer e scale
           pelicanoTimerRef.current = 0
           pelicanoTimerStartRef.current = null
           pelicanoScalingRef.current = false
@@ -529,16 +540,18 @@ export const ARScreen: React.FC<ARScreenProps> = ({
             pelicanoScaleRef.current = PELICANO_INITIAL_SCALE
           }
         }
+        // Se sair dos círculos, esconde o botão
         setShowComecarButton(false)
         buttonAlreadySpawnedRef.current = false
       }
       pelicanoLastInCircleRef.current = isPelicanoInAnyCircle
-      pelicanoMoveAnimationRef.current = requestAnimationFrame(animationLoop)
+
+      pelicanoMoveAnimationRef.current = requestAnimationFrame(movePelicano)
     }
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
-    animationLoop()
+    movePelicano()
 
     const handleResize = () => {
       if (canvasRef.current) {
@@ -554,6 +567,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         cancelAnimationFrame(pelicanoMoveAnimationRef.current)
         pelicanoMoveAnimationRef.current = null
       }
+
       if (pelicanoHandlersRef.current.handleKeyDown) {
         window.removeEventListener('keydown', pelicanoHandlersRef.current.handleKeyDown)
       }
@@ -599,12 +613,19 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     }
   }, [usarAFrame, normalizePath, getDebugCircleProps, getDebugCirclePropsRight])
 
+  // Caminho para imagem dos binóculos para uso na tela
   const binoculosImgPath = useMemo(() => normalizePath('assets/images/binoculos.png'), [normalizePath])
+
+  // Caminho para btn-comecar
   const btnComecarImgPath = useMemo(() => normalizePath('assets/images/btn-comecar.png'), [normalizePath])
 
+  // Ao exibir overlay dos binóculos, desenha também o círculo no mesmo local
   return (
     <div className="ar-game-screen">
+      {/* Landscape Enforcer - força orientação landscape */}
       <LandscapeEnforcer enabled={true} />
+      
+      {/* Loading overlay */}
       {arLoading && (
         <div className="ar-loading-overlay">
           <div className="ar-loading-content">
@@ -614,10 +635,12 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         </div>
       )}
 
+      {/* A-Frame Scene (se habilitado) */}
       {usarAFrame && (
         <ARSceneAFrame />
       )}
 
+      {/* Binóculos na tela, centralizado, sem escala, com tamanho nativo + círculo de debug */}
       {usarAFrame && !arLoading && (
         <div
           style={{
@@ -660,6 +683,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
               }
             }}
           />
+          {/* Canvas de overlay para círculos de debug */}
           <canvas
             ref={canvasRef}
             width={typeof window !== 'undefined' ? window.innerWidth : 1920}
@@ -677,13 +701,14 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         </div>
       )}
 
+      {/* Botão "Começar" - centralizado horizontalmente, mas cerca de 30% abaixo do topo da tela */}
       {showComecarButton && (
         <button
           onClick={() => onNavigate('quiz1', 'zoom-out', 'up')}
           style={{
             position: 'fixed',
             left: '50%',
-            top: '62%',
+            top: '62%', // ~a little bit below center vertically
             transform: 'translate(-50%, -50%)',
             zIndex: 9999999,
             background: 'none',
@@ -709,6 +734,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         </button>
       )}
 
+      {/* Face Tracker (se habilitado) */}
       {usarFaceTracking && (
         <FaceTracker enabled={true} />
       )}
