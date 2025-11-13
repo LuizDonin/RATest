@@ -254,7 +254,7 @@ async function initializeAFrameScene(): Promise<void> {
     scene.id = 'ar-scene-main'
     scene.setAttribute('embedded', 'true')
     scene.setAttribute('vr-mode-ui', 'enabled: false')
-    scene.setAttribute('device-orientation-permission-ui', 'enabled: true')
+    scene.setAttribute('device-orientation-permission-ui', 'enabled: false')
     scene.setAttribute('renderer', 'alpha: true; antialias: true; colorManagement: true; physicallyCorrectLights: false; sortObjects: true; logarithmicDepthBuffer: false; precision: mediump;')
     scene.setAttribute('webxr', 'enabled: false')
     scene.setAttribute('background', 'transparent: true')
@@ -295,5 +295,32 @@ export function getGlobalVideo(): HTMLVideoElement | null {
 
 export function getGlobalStream(): MediaStream | null {
     return globalStream || (getGlobalVideo()?.srcObject as MediaStream) || null
+}
+
+/**
+ * Solicita permissão para acessar o sensor de movimento do dispositivo
+ * Retorna 'granted', 'denied' ou 'prompt' (ou null se a API não estiver disponível)
+ */
+export async function requestDeviceOrientationPermission(): Promise<'granted' | 'denied' | 'prompt' | null> {
+    // Verificar se a API está disponível (iOS 13+ e alguns navegadores modernos)
+    if (typeof (DeviceOrientationEvent as any)?.requestPermission === 'function') {
+        try {
+            const permission = await (DeviceOrientationEvent as any).requestPermission()
+            console.log('Permissão de orientação do dispositivo:', permission)
+            return permission
+        } catch (error) {
+            console.error('Erro ao solicitar permissão de orientação:', error)
+            return null
+        }
+    }
+    
+    // Se a API não estiver disponível, verificar se já temos permissão
+    // Em navegadores que não requerem permissão explícita, retornamos 'granted'
+    if (typeof DeviceOrientationEvent !== 'undefined') {
+        // Se conseguimos criar um listener sem erro, provavelmente temos permissão
+        return 'granted'
+    }
+    
+    return null
 }
 

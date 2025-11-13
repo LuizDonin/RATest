@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState } from 'react'
 import type { ScreenType, TransitionType, TransitionDirection } from '../../types/screens'
+import { requestDeviceOrientationPermission } from '../../utils/globalInit'
 import '../../styles/tutorial-screen.css'
 
 interface TutorialScreen2Props {
@@ -12,6 +13,40 @@ interface TutorialScreen2Props {
 export const TutorialScreen2: React.FC<TutorialScreen2Props> = ({
     onNavigate
 }) => {
+    const [isRequestingPermission, setIsRequestingPermission] = useState(false)
+
+    // Função para lidar com a navegação para ARScreen, solicitando permissão primeiro
+    const handleNavigateToAR = async () => {
+        if (isRequestingPermission) return
+
+        setIsRequestingPermission(true)
+        try {
+            // Solicitar permissão de orientação do dispositivo antes de navegar
+            console.log('Solicitando permissão de orientação do dispositivo...')
+            const permission = await requestDeviceOrientationPermission()
+            
+            if (permission === 'granted' || permission === null) {
+                // Permissão concedida ou não necessária - navegar para AR
+                console.log('Permissão concedida ou não necessária, navegando para ARScreen')
+                onNavigate('ar', 'fade', 'right')
+            } else if (permission === 'denied') {
+                // Permissão negada - ainda assim navegar, mas avisar o usuário
+                console.warn('Permissão de orientação negada, mas navegando mesmo assim')
+                onNavigate('ar', 'fade', 'right')
+            } else {
+                // Prompt ainda pendente - navegar mesmo assim
+                console.log('Prompt de permissão pendente, navegando para ARScreen')
+                onNavigate('ar', 'fade', 'right')
+            }
+        } catch (error) {
+            console.error('Erro ao solicitar permissão:', error)
+            // Em caso de erro, navegar mesmo assim
+            onNavigate('ar', 'fade', 'right')
+        } finally {
+            setIsRequestingPermission(false)
+        }
+    }
+
     // Get base URL from vite config or use current location
     const getBaseUrl = () => {
         const base = (import.meta as any)?.env?.BASE_URL || (document?.baseURI ? new URL(document.baseURI).pathname : '/')
@@ -56,12 +91,15 @@ export const TutorialScreen2: React.FC<TutorialScreen2Props> = ({
             <div className="tutorial-button-container">
                 <button
                     className="tutorial-button-comecar"
-                    onClick={() => onNavigate('ar', 'fade', 'right')}
+                    onClick={handleNavigateToAR}
+                    disabled={isRequestingPermission}
                     style={{
                         backgroundImage: `url("${btnComecarImage}")`,
                         backgroundSize: 'contain',
                         backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'center'
+                        backgroundPosition: 'center',
+                        opacity: isRequestingPermission ? 0.7 : 1,
+                        cursor: isRequestingPermission ? 'wait' : 'pointer'
                     }}
                 />
             </div>
