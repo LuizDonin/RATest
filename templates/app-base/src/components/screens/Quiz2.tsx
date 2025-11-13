@@ -25,10 +25,9 @@ export const Quiz2: React.FC<Quiz2Props> = ({
 
     // Trigger das animações quando o componente monta
     useEffect(() => {
-        // Pequeno delay para garantir que a transição de tela terminou
         const timer = setTimeout(() => {
             setIsMounted(true)
-        }, 100)
+        }, 40) // igual Quiz1
         return () => clearTimeout(timer)
     }, [])
 
@@ -57,60 +56,40 @@ export const Quiz2: React.FC<Quiz2Props> = ({
     const macacoTopImg = normalizePath('assets/images/macacotop.png')
     const bgCapaImg = normalizePath('assets/images/bg-capa.png')
 
-    // Handler para respostas
     const handleResposta = (opcao: string) => {
         if (opcao === 'Macaco') {
-            // Resposta correta
-            console.log('[QUIZ2] Resposta CORRETA: Macaco')
             setIsCorrectAnswer(true)
-            
-            // Após a animação de movimento do macaco (1.2s), mostrar o macaco colorido e o macaco top
             setTimeout(() => {
                 setShowColoredMacaco(true)
                 setShowMacacoTop(true)
-            }, 1200) // 1.2s (animação de movimento do macaco)
-            
-            // Após mostrar o macaco colorido, navegar para ResultScreen
+            }, 1050)
             setTimeout(() => {
                 onNavigate('resultado', 'fade', 'right')
-            }, 3000) // 3s após a resposta correta (1.2s animação + tempo para ver o resultado)
+            }, 2700)
         }
-        // Não faz nada nas outras
     }
 
-    // Função para calcular e ajustar o scale do macaco
+    // Anim/scale igual a Quiz1: recalcula na montagem e em resize
     const adjustMacacoScale = useCallback(() => {
         if (!quizSectionRef.current || !macacoImgRef.current || !macacoContainerRef.current) {
             return
         }
-
         const quizSection = quizSectionRef.current
         const macacoImg = macacoImgRef.current
         const macacoContainer = macacoContainerRef.current
-
-        // Obter dimensões
         const quizRect = quizSection.getBoundingClientRect()
         const macacoRect = macacoImg.getBoundingClientRect()
         const containerRect = macacoContainer.getBoundingClientRect()
-
-        // Calcular se há sobreposição
-        // O macaco está sobrepondo se o topo da imagem está acima do bottom do quiz
         const macacoTop = macacoRect.top
         const quizBottom = quizRect.bottom
-
-        // Se houver sobreposição, calcular o scale necessário
         if (macacoTop < quizBottom) {
-            // Calcular quanto precisa reduzir
             const overlap = quizBottom - macacoTop
             const macacoHeight = macacoRect.height || 1
             const scaleReduction = Math.max(0.3, Math.min(1, 1 - (overlap / macacoHeight)))
             setMacacoScale(scaleReduction)
         } else {
-            // Sem sobreposição, usar scale 1 (ou o máximo que cabe no container)
             const availableHeight = containerRect.height
             const naturalHeight = macacoImg.naturalHeight || macacoRect.height || availableHeight
-            
-            // Se a imagem natural é maior que o espaço disponível, calcular scale
             if (naturalHeight > availableHeight && availableHeight > 0) {
                 const maxScale = availableHeight / naturalHeight
                 setMacacoScale(Math.min(1, maxScale))
@@ -120,60 +99,47 @@ export const Quiz2: React.FC<Quiz2Props> = ({
         }
     }, [])
 
-    // Sincronizar dimensões do macaco colorido com o original
+    // Mantém sincronia dimensões do mascote colorido
     useEffect(() => {
         const syncMacacoDimensions = () => {
             if (macacoImgRef.current && macacoColoredImgRef.current) {
                 const original = macacoImgRef.current
                 const colored = macacoColoredImgRef.current
-                
-                // Obter dimensões reais da imagem original (sem transform)
                 const width = original.offsetWidth || original.naturalWidth
                 const height = original.offsetHeight || original.naturalHeight
-                
-                // Aplicar as mesmas dimensões ao macaco colorido
                 if (width > 0 && height > 0) {
                     colored.style.width = width + 'px'
                     colored.style.height = height + 'px'
                 }
             }
         }
-
-        // Sincronizar quando as imagens carregarem
         const originalImg = macacoImgRef.current
         const coloredImg = macacoColoredImgRef.current
-
         if (originalImg) {
             if (originalImg.complete) {
-                setTimeout(syncMacacoDimensions, 100)
+                setTimeout(syncMacacoDimensions, 60)
             } else {
                 originalImg.addEventListener('load', () => {
-                    setTimeout(syncMacacoDimensions, 100)
+                    setTimeout(syncMacacoDimensions, 60)
                 })
             }
         }
-
         if (coloredImg) {
             if (coloredImg.complete) {
-                setTimeout(syncMacacoDimensions, 100)
+                setTimeout(syncMacacoDimensions, 60)
             } else {
                 coloredImg.addEventListener('load', () => {
-                    setTimeout(syncMacacoDimensions, 100)
+                    setTimeout(syncMacacoDimensions, 60)
                 })
             }
         }
-
-        // Sincronizar quando o macaco centralizar
         if (isCorrectAnswer) {
-            setTimeout(syncMacacoDimensions, 100) // Imediato
-            setTimeout(syncMacacoDimensions, 850) // Após a animação de centralização
+            setTimeout(syncMacacoDimensions, 90)
+            setTimeout(syncMacacoDimensions, 650)
         }
-
-        // Sincronizar quando mostrar o macaco colorido
         if (showColoredMacaco) {
-            setTimeout(syncMacacoDimensions, 50)
+            setTimeout(syncMacacoDimensions, 25)
         }
-
         return () => {
             if (originalImg) {
                 originalImg.removeEventListener('load', syncMacacoDimensions)
@@ -184,11 +150,8 @@ export const Quiz2: React.FC<Quiz2Props> = ({
         }
     }, [isMounted, isCorrectAnswer, showColoredMacaco])
 
-    // Monitorar mudanças de tamanho e ajustar scale
     useEffect(() => {
         if (!isMounted) return
-
-        // Ajustar quando a imagem carregar
         const macacoImg = macacoImgRef.current
         if (macacoImg) {
             if (macacoImg.complete) {
@@ -197,20 +160,14 @@ export const Quiz2: React.FC<Quiz2Props> = ({
                 macacoImg.addEventListener('load', adjustMacacoScale)
             }
         }
-
-        // Ajustar em resize e orientation change
         const handleResize = () => {
-            setTimeout(adjustMacacoScale, 100)
+            setTimeout(adjustMacacoScale, 60)
         }
-
         window.addEventListener('resize', handleResize)
         window.addEventListener('orientationchange', handleResize)
-
-        // Usar ResizeObserver para detectar mudanças nos elementos
         const resizeObserver = new ResizeObserver(() => {
-            setTimeout(adjustMacacoScale, 50)
+            setTimeout(adjustMacacoScale, 30)
         })
-
         if (quizSectionRef.current) {
             resizeObserver.observe(quizSectionRef.current)
         }
@@ -220,7 +177,6 @@ export const Quiz2: React.FC<Quiz2Props> = ({
         if (macacoImgRef.current) {
             resizeObserver.observe(macacoImgRef.current)
         }
-
         return () => {
             window.removeEventListener('resize', handleResize)
             window.removeEventListener('orientationchange', handleResize)
@@ -251,7 +207,7 @@ export const Quiz2: React.FC<Quiz2Props> = ({
                     margin: 0
                 }}
             >
-            {/* Macaco Top - aparece no topo após centralização */}
+            {/* Mascote no topo igual quiz1 */}
             {showMacacoTop && (
                 <img
                     src={macacoTopImg}
@@ -259,32 +215,98 @@ export const Quiz2: React.FC<Quiz2Props> = ({
                     className="quiz1-pelicano-top"
                     style={{
                         position: 'fixed',
-                        top: 20,
+                        top: 8,
                         left: '50%',
-                        zIndex: 20,
+                        transform: 'translateX(-50%)',
+                        zIndex: 21,
                         pointerEvents: 'none'
+                        // Não definir width nem height para manter tamanho nativo (tira width: 88, height: 'auto')
                     }}
                 />
             )}
-            {/* Seção do Quiz - 65% da altura */}
+
+            {/* Mascote na base igual quiz1 */}
+            <div
+                ref={macacoContainerRef}
+                className={
+                    !isMounted ? 'quiz1-pelicano-mascote-initial' :
+                    isCorrectAnswer ? 'quiz1-pelicano-mascote quiz1-pelicano-center' :
+                    'quiz1-pelicano-mascote'
+                }
+                style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    width: '100%',
+                    height: '210px',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'flex-end',
+                    zIndex: 9,
+                    pointerEvents: 'none'
+                }}
+            >
+                <div style={{ position: 'relative', display: 'inline-block', height: '210px' }}>
+                    <img
+                        ref={macacoImgRef}
+                        src={macaco1Img}
+                        alt="Macaco Mascote"
+                        className={isCorrectAnswer ? 'quiz1-pelicano-img-center' : ''}
+                        style={{
+                            // rewrite: O scale final do macaco (e macacocor) está diferente, volte como estava antes
+                            // Return to classic Quiz1: final scale on acerto was 1.16 (não 1.09)
+                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${macacoScale * 1.01})`,
+                            transformOrigin: 'center bottom',
+                            transition: isCorrectAnswer ? 'transform 1s cubic-bezier(.82,.06,.53,.82)' : 'transform 0.22s cubic-bezier(.82,.06,.53,.82)',
+                            display: 'block',
+                            verticalAlign: 'bottom',
+                            userSelect: 'none',
+                            height: '192px',
+                            width: 'auto'
+                        }}
+                    />
+                    {/* Mascote colorido sobreposto */}
+                    <img
+                        ref={macacoColoredImgRef}
+                        src={macacoColoredImg}
+                        alt="Macaco Colorido"
+                        className={showColoredMacaco ? 'quiz1-pelicano-colored-fade-in' : 'quiz1-pelicano-colored-hidden'}
+                        style={{
+                            position: 'absolute',
+                            bottom: 0,
+                            left: 0,
+                            objectPosition: 'center bottom',
+                            pointerEvents: 'none',
+                            // O scale final do macacocor também deve ser 1.16 (não 1.09)
+                            transform: isCorrectAnswer ? 'scale(1.16)' : `scale(${macacoScale * 1.01})`,
+                            transformOrigin: 'center bottom',
+                            transition: 'transform 1s cubic-bezier(.82,.06,.53,.82), opacity 0.6s 0.1s',
+                            userSelect: 'none',
+                            height: '192px',
+                            width: 'auto'
+                        }}
+                    />
+                </div>
+            </div>
+
+            {/* Seção Quiz sobreposta visualmente igual quiz1 */}
             <div
                 ref={quizSectionRef}
-                className={`quiz1-quiz-section ${isCorrectAnswer ? 'quiz1-quiz-exit' : ''}`}
+                className={`quiz1-quiz-section${isCorrectAnswer ? ' quiz1-quiz-exit' : ''}`}
                 style={{
-                    flex: '0 0 65%',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'flex-start',
                     width: '100%',
-                    paddingTop: 'clamp(20px, 4vh, 40px)',
-                    paddingBottom: 'clamp(10px, 2vh, 20px)',
-                    overflowY: 'auto',
-                    overflowX: 'hidden',
-                    pointerEvents: isCorrectAnswer ? 'none' : 'auto'
+                    paddingTop: '38px',
+                    paddingBottom: '12px',
+                    pointerEvents: isCorrectAnswer ? 'none' : 'auto',
+                    position: 'relative',
+                    zIndex: 10
                 }}
             >
-                {/* Enunciado no topo */}
+                {/* Enunciado igual quiz1 */}
                 <div 
                     className={
                         !isMounted ? 'quiz1-enunciado-initial' :
@@ -292,9 +314,9 @@ export const Quiz2: React.FC<Quiz2Props> = ({
                         'quiz1-enunciado'
                     }
                     style={{ 
-                        width: '90%', 
-                        maxWidth: '500px',
-                        marginBottom: 'clamp(16px, 3vh, 26px)'
+                        width: '93%', 
+                        maxWidth: '490px',
+                        marginBottom: 'clamp(12px, 5vw, 32px)'
                     }}
                 >
                     <img
@@ -303,167 +325,122 @@ export const Quiz2: React.FC<Quiz2Props> = ({
                         style={{
                             display: 'block',
                             margin: '0 auto',
-                            boxShadow: '0 2px 12px rgba(0,0,0,0.07)'
+                            boxShadow: '0 2px 14px rgba(0,0,0,0.09)'
                         }}
                     />
                 </div>
 
-                {/* Opções */}
+                {/* Opções igual Quiz1 */}
                 <div
-                    className={`quiz1-options-wrapper ${isCorrectAnswer ? 'quiz1-options-exit' : ''}`}
+                    className={`quiz1-options-wrapper${isCorrectAnswer ? ' quiz1-options-exit' : ''}`}
                     style={{
-                        flex: 1,
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
                         justifyContent: 'flex-start',
-                        gap: 'clamp(16px, 2.5vh, 26px)',
+                        gap: 'clamp(18px, 2.8vh, 28px)',
                         width: '100%',
-                        padding: '0 5%'
+                        padding: '0 3.5%',
+                        marginBottom: 0,
+                        marginTop: 'min(2vw,18px)'
                     }}
                 >
-                {/* Vaca */}
-                <button
-                    type="button"
-                    className={
-                        !isMounted ? 'quiz1-option-initial' :
-                        isCorrectAnswer ? 'quiz1-option-exit' :
-                        'quiz1-option'
-                    }
-                    onClick={() => handleResposta('Vaca')}
-                    disabled={isCorrectAnswer}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        outline: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        width: '100%',
-                        maxWidth: 'min(270px, 85vw)'
-                    }}
-                >
-                    <img
-                        src={vacaImg}
-                        alt="Vaca"
+                    {/* Vaca */}
+                    <button
+                        type="button"
+                        className={
+                            !isMounted ? 'quiz1-option-initial' :
+                            isCorrectAnswer ? 'quiz1-option-exit' :
+                            'quiz1-option'
+                        }
+                        onClick={() => handleResposta('Vaca')}
+                        disabled={isCorrectAnswer}
                         style={{
-                            borderRadius: 18,
-                            boxShadow: '0 3px 12px rgba(40,40,40,0.07)'
+                            background: 'none',
+                            border: 'none',
+                            outline: 'none',
+                            cursor: isCorrectAnswer ? 'default' : 'pointer',
+                            padding: 0,
+                            width: '100%',
+                            maxWidth: 'min(240px, 85vw)',
+                            boxShadow: '0 3px 13px rgba(40,40,40,0.08)'
                         }}
-                    />
-                </button>
-                {/* Macaco (correta) */}
-                <button
-                    type="button"
-                    className={
-                        !isMounted ? 'quiz1-option-initial' :
-                        isCorrectAnswer ? 'quiz1-option-exit' :
-                        'quiz1-option'
-                    }
-                    onClick={() => handleResposta('Macaco')}
-                    disabled={isCorrectAnswer}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        outline: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        width: '100%',
-                        maxWidth: 'min(270px, 85vw)'
-                    }}
-                >
-                    <img
-                        src={macacoImg}
-                        alt="Macaco"
+                    >
+                        <img
+                            src={vacaImg}
+                            alt="Vaca"
+                            style={{
+                                borderRadius: 16,
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block'
+                            }}
+                        />
+                    </button>
+                    {/* Macaco (correta) */}
+                    <button
+                        type="button"
+                        className={
+                            !isMounted ? 'quiz1-option-initial' :
+                            isCorrectAnswer ? 'quiz1-option-exit' :
+                            'quiz1-option'
+                        }
+                        onClick={() => handleResposta('Macaco')}
+                        disabled={isCorrectAnswer}
                         style={{
-                            borderRadius: 18,
-                            boxShadow: '0 3px 12px rgba(40,40,40,0.07)'
+                            background: 'none',
+                            border: 'none',
+                            outline: 'none',
+                            cursor: isCorrectAnswer ? 'default' : 'pointer',
+                            padding: 0,
+                            width: '100%',
+                            maxWidth: 'min(240px, 85vw)',
+                            boxShadow: '0 3px 13px rgba(40,40,40,0.08)'
                         }}
-                    />
-                </button>
-                {/* Sabia */}
-                <button
-                    type="button"
-                    className={
-                        !isMounted ? 'quiz1-option-initial' :
-                        isCorrectAnswer ? 'quiz1-option-exit' :
-                        'quiz1-option'
-                    }
-                    onClick={() => handleResposta('Sabia')}
-                    disabled={isCorrectAnswer}
-                    style={{
-                        background: 'none',
-                        border: 'none',
-                        outline: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                        width: '100%',
-                        maxWidth: 'min(270px, 85vw)'
-                    }}
-                >
-                    <img
-                        src={sabiaImg}
-                        alt="Sabia"
+                    >
+                        <img
+                            src={macacoImg}
+                            alt="Macaco"
+                            style={{
+                                borderRadius: 16,
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block'
+                            }}
+                        />
+                    </button>
+                    {/* Sabia */}
+                    <button
+                        type="button"
+                        className={
+                            !isMounted ? 'quiz1-option-initial' :
+                            isCorrectAnswer ? 'quiz1-option-exit' :
+                            'quiz1-option'
+                        }
+                        onClick={() => handleResposta('Sabia')}
+                        disabled={isCorrectAnswer}
                         style={{
-                            borderRadius: 18,
-                            boxShadow: '0 3px 12px rgba(40,40,40,0.07)'
+                            background: 'none',
+                            border: 'none',
+                            outline: 'none',
+                            cursor: isCorrectAnswer ? 'default' : 'pointer',
+                            padding: 0,
+                            width: '100%',
+                            maxWidth: 'min(240px, 85vw)',
+                            boxShadow: '0 3px 13px rgba(40,40,40,0.08)'
                         }}
-                    />
-                </button>
-                </div>
-            </div>
-
-            {/* Seção do Macaco - 35% da altura */}
-            <div 
-                ref={macacoContainerRef}
-                className={
-                    !isMounted ? 'quiz1-pelicano-mascote-initial' :
-                    isCorrectAnswer ? 'quiz1-pelicano-mascote quiz1-pelicano-center' :
-                    'quiz1-pelicano-mascote'
-                }
-                style={{
-                    flex: '0 0 35%',
-                    width: '100%',
-                    height: 'auto',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingBottom: 'clamp(12px, 2vh, 24px)',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    zIndex: isCorrectAnswer ? 10 : 1
-                }}
-            >
-                <div style={{ position: 'relative', display: 'inline-block' }}>
-                    <img
-                        ref={macacoImgRef}
-                        src={macaco1Img}
-                        alt="Macaco Mascote"
-                        className={isCorrectAnswer ? 'quiz1-pelicano-img-center' : ''}
-                        style={{
-                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${macacoScale})`,
-                            transformOrigin: 'center center',
-                            transition: isCorrectAnswer ? 'transform 1.2s ease-out' : 'transform 0.3s ease-out',
-                            display: 'block',
-                            verticalAlign: 'top'
-                        }}
-                    />
-                    {/* Macaco colorido sobreposto */}
-                    <img
-                        ref={macacoColoredImgRef}
-                        src={macacoColoredImg}
-                        alt="Macaco Colorido"
-                        className={showColoredMacaco ? 'quiz1-pelicano-colored-fade-in' : 'quiz1-pelicano-colored-hidden'}
-                        style={{
-                            position: 'absolute',
-                            top: 0,
-                            left: 0,
-                            objectPosition: 'center',
-                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${macacoScale})`,
-                            transformOrigin: 'center center',
-                            pointerEvents: 'none',
-                            transition: 'transform 1.2s ease-out, opacity 1.2s ease-in-out'
-                        }}
-                    />
+                    >
+                        <img
+                            src={sabiaImg}
+                            alt="Sabia"
+                            style={{
+                                borderRadius: 16,
+                                width: '100%',
+                                height: 'auto',
+                                display: 'block'
+                            }}
+                        />
+                    </button>
                 </div>
             </div>
         </div>

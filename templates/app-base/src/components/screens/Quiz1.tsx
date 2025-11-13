@@ -26,7 +26,7 @@ export const Quiz1: React.FC<Quiz1Props> = ({
     const pelicanoContainerRef = useRef<HTMLDivElement>(null)
 
     // Personalização: margem top (em relação ao quiz), margem bottom (em relação ao fundo da tela)
-    const PELICANO_MARGIN_BOTTOM = 40   // px
+    const PELICANO_MARGIN_BOTTOM = 60   // px
     const PELICANO_MARGIN_TOP_MIN = 24  // px mínima acima do pelicano
 
     // Trigger das animações quando o componente monta
