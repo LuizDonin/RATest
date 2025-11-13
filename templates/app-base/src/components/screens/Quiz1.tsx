@@ -18,14 +18,19 @@ export const Quiz1: React.FC<Quiz1Props> = ({
     const [isCorrectAnswer, setIsCorrectAnswer] = useState(false)
     const [showColoredPelicano, setShowColoredPelicano] = useState(false)
     const [showPelicanoTop, setShowPelicanoTop] = useState(false)
+    const [pelicanoTopWidth, setPelicanoTopWidth] = useState<number | null>(null)
+    const pelicanoTopImgRef = useRef<HTMLImageElement>(null)
     const quizSectionRef = useRef<HTMLDivElement>(null)
     const pelicanoImgRef = useRef<HTMLImageElement>(null)
     const pelicanoColoredImgRef = useRef<HTMLImageElement>(null)
     const pelicanoContainerRef = useRef<HTMLDivElement>(null)
 
+    // Personalização: margem top (em relação ao quiz), margem bottom (em relação ao fundo da tela)
+    const PELICANO_MARGIN_BOTTOM = 40   // px
+    const PELICANO_MARGIN_TOP_MIN = 24  // px mínima acima do pelicano
+
     // Trigger das animações quando o componente monta
     useEffect(() => {
-        // Pequeno delay para garantir que a transição de tela terminou
         const timer = setTimeout(() => {
             setIsMounted(true)
         }, 100)
@@ -60,64 +65,53 @@ export const Quiz1: React.FC<Quiz1Props> = ({
     // Handler para respostas
     const handleResposta = (opcao: string) => {
         if (opcao === 'PelicanoR') {
-            // Resposta correta
-            console.log('[QUIZ1] Resposta CORRETA: PelicanoR')
             setIsCorrectAnswer(true)
-            
-            // Após a animação de movimento do pelicano (1.2s), mostrar o pelicano colorido e o pelicano top
             setTimeout(() => {
                 setShowColoredPelicano(true)
                 setShowPelicanoTop(true)
-            }, 1200) // 1.2s (animação de movimento do pelicano)
-            
-            // Após mostrar o pelicano colorido, navegar para ARScreen2
+            }, 1200)
             setTimeout(() => {
                 onNavigate('ar2', 'fade', 'right')
-            }, 3000) // 3s após a resposta correta (1.2s animação + tempo para ver o resultado)
+            }, 3000)
         }
-        // Não faz nada nas outras
     }
 
-    // Função para calcular e ajustar o scale do pelicano
+    // Função para calcular e ajustar o scale do pelicano considerando as margens
     const adjustPelicanoScale = useCallback(() => {
         if (!quizSectionRef.current || !pelicanoImgRef.current || !pelicanoContainerRef.current) {
             return
         }
 
-        const quizSection = quizSectionRef.current
+        const quizRect = quizSectionRef.current.getBoundingClientRect()
         const pelicanoImg = pelicanoImgRef.current
-        const pelicanoContainer = pelicanoContainerRef.current
-
-        // Obter dimensões
-        const quizRect = quizSection.getBoundingClientRect()
         const pelicanoRect = pelicanoImg.getBoundingClientRect()
-        const containerRect = pelicanoContainer.getBoundingClientRect()
+        const winHeight = window.innerHeight
 
-        // Calcular se há sobreposição
-        // O pelicano está sobrepondo se o topo da imagem está acima do bottom do quiz
-        const pelicanoTop = pelicanoRect.top
-        const quizBottom = quizRect.bottom
+        // Pelicano: quer-se ele com margem bottom, e com margem top em relação ao quiz (enunciado/opções)
+        // Limites:
+        //  - topo do pelicano >= quizSection.bottom + PELICANO_MARGIN_TOP_MIN
+        //  - baixo do pelicano <= winHeight - PELICANO_MARGIN_BOTTOM
 
-        // Se houver sobreposição, calcular o scale necessário
-        if (pelicanoTop < quizBottom) {
-            // Calcular quanto precisa reduzir
-            const overlap = quizBottom - pelicanoTop
-            const pelicanoHeight = pelicanoRect.height || 1
-            const scaleReduction = Math.max(0.3, Math.min(1, 1 - (overlap / pelicanoHeight)))
-            setPelicanoScale(scaleReduction)
-        } else {
-            // Sem sobreposição, usar scale 1 (ou o máximo que cabe no container)
-            const availableHeight = containerRect.height
-            const naturalHeight = pelicanoImg.naturalHeight || pelicanoRect.height || availableHeight
-            
-            // Se a imagem natural é maior que o espaço disponível, calcular scale
-            if (naturalHeight > availableHeight && availableHeight > 0) {
-                const maxScale = availableHeight / naturalHeight
-                setPelicanoScale(Math.min(1, maxScale))
+        // Uso naturalHeight sempre que possível
+        const naturalHeight = pelicanoImg.naturalHeight || pelicanoRect.height || 1
+
+        // Máxima altura possível: entre quizSection.bottom+marginTop e window.innerHeight-marginBottom
+        const topLimit = quizRect.bottom + PELICANO_MARGIN_TOP_MIN
+        const bottomLimit = winHeight - PELICANO_MARGIN_BOTTOM
+        const availableHeight = bottomLimit - topLimit
+
+        // scale nunca deve ser maior que 1, e nunca menor que 0.3 pra não sumir
+        let newScale = 1
+
+        if (pelicanoImg && availableHeight > 0) {
+            if (naturalHeight > availableHeight) {
+                // Precisa escalar para caber
+                newScale = Math.max(availableHeight / naturalHeight, 0.3)
             } else {
-                setPelicanoScale(1)
+                newScale = 1
             }
         }
+        setPelicanoScale(newScale)
     }, [])
 
     // Sincronizar dimensões do pelicano colorido com o original
@@ -126,12 +120,10 @@ export const Quiz1: React.FC<Quiz1Props> = ({
             if (pelicanoImgRef.current && pelicanoColoredImgRef.current) {
                 const original = pelicanoImgRef.current
                 const colored = pelicanoColoredImgRef.current
-                
-                // Obter dimensões reais da imagem original (sem transform)
+
                 const width = original.offsetWidth || original.naturalWidth
                 const height = original.offsetHeight || original.naturalHeight
-                
-                // Aplicar as mesmas dimensões ao pelicano colorido
+
                 if (width > 0 && height > 0) {
                     colored.style.width = width + 'px'
                     colored.style.height = height + 'px'
@@ -139,7 +131,6 @@ export const Quiz1: React.FC<Quiz1Props> = ({
             }
         }
 
-        // Sincronizar quando as imagens carregarem
         const originalImg = pelicanoImgRef.current
         const coloredImg = pelicanoColoredImgRef.current
 
@@ -163,13 +154,10 @@ export const Quiz1: React.FC<Quiz1Props> = ({
             }
         }
 
-        // Sincronizar quando o pelicano centralizar
         if (isCorrectAnswer) {
-            setTimeout(syncPelicanoDimensions, 100) // Imediato
-            setTimeout(syncPelicanoDimensions, 850) // Após a animação de centralização
+            setTimeout(syncPelicanoDimensions, 100)
+            setTimeout(syncPelicanoDimensions, 850)
         }
-
-        // Sincronizar quando mostrar o pelicano colorido
         if (showColoredPelicano) {
             setTimeout(syncPelicanoDimensions, 50)
         }
@@ -188,7 +176,6 @@ export const Quiz1: React.FC<Quiz1Props> = ({
     useEffect(() => {
         if (!isMounted) return
 
-        // Ajustar quando a imagem carregar
         const pelicanoImg = pelicanoImgRef.current
         if (pelicanoImg) {
             if (pelicanoImg.complete) {
@@ -198,15 +185,12 @@ export const Quiz1: React.FC<Quiz1Props> = ({
             }
         }
 
-        // Ajustar em resize e orientation change
         const handleResize = () => {
             setTimeout(adjustPelicanoScale, 100)
         }
-
         window.addEventListener('resize', handleResize)
         window.addEventListener('orientationchange', handleResize)
 
-        // Usar ResizeObserver para detectar mudanças nos elementos
         const resizeObserver = new ResizeObserver(() => {
             setTimeout(adjustPelicanoScale, 50)
         })
@@ -231,6 +215,22 @@ export const Quiz1: React.FC<Quiz1Props> = ({
         }
     }, [isMounted, adjustPelicanoScale])
 
+    // ---- PEICANO TOP FIX: garantir 100% centralização no topo -----
+    useEffect(() => {
+        if (showPelicanoTop) {
+            const setWidth = () => {
+                if (pelicanoTopImgRef.current) {
+                    setPelicanoTopWidth(pelicanoTopImgRef.current.offsetWidth)
+                }
+            }
+            setWidth()
+            window.addEventListener('resize', setWidth)
+            return () => {
+                window.removeEventListener('resize', setWidth)
+            }
+        }
+    }, [showPelicanoTop])
+
     return (
         <>
             <LandscapeBlocker />
@@ -254,6 +254,7 @@ export const Quiz1: React.FC<Quiz1Props> = ({
             {/* Pelicano Top - aparece no topo após centralização */}
             {showPelicanoTop && (
                 <img
+                    ref={pelicanoTopImgRef}
                     src={pelicanoTopImg}
                     alt="Pelicano Top"
                     className="quiz1-pelicano-top"
@@ -262,26 +263,32 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         top: 20,
                         left: '50%',
                         zIndex: 20,
-                        pointerEvents: 'none'
+                        pointerEvents: 'none',
+                        transform: pelicanoTopWidth
+                            ? `translateX(-50%)`
+                            : 'translateX(-50%)',
                     }}
                 />
             )}
-            {/* Seção do Quiz - 65% da altura */}
+
+            {/* Seção do Quiz - não ocupa altura fixa, permite crescer menos para sobrar espaço pro pelicano sempre */}
             <div
                 ref={quizSectionRef}
                 className={`quiz1-quiz-section ${isCorrectAnswer ? 'quiz1-quiz-exit' : ''}`}
                 style={{
-                    flex: '0 0 65%',
+                    // Não usa mais 65% de flex. Usa paddingBottom generoso para espaço visual com o pelicano
+                    width: '100%',
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'flex-start',
-                    width: '100%',
                     paddingTop: 'clamp(20px, 4vh, 40px)',
-                    paddingBottom: 'clamp(10px, 2vh, 20px)',
+                    paddingBottom: `${PELICANO_MARGIN_TOP_MIN + 32}px`, // espaço extra p/ pelicano acima
+                    minHeight: '200px',
                     overflowY: 'auto',
                     overflowX: 'hidden',
-                    pointerEvents: isCorrectAnswer ? 'none' : 'auto'
+                    pointerEvents: isCorrectAnswer ? 'none' : 'auto',
+                    flex: 1
                 }}
             >
                 {/* Enunciado no topo */}
@@ -412,8 +419,8 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                 </div>
             </div>
 
-            {/* Seção do Pelicano - 35% da altura */}
-            <div 
+            {/* Mascote Pelicano - alinhado ao fundo com marginBottom, e sempre com margem top mínima para o quiz */}
+            <div
                 ref={pelicanoContainerRef}
                 className={
                     !isMounted ? 'quiz1-pelicano-mascote-initial' :
@@ -421,30 +428,34 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                     'quiz1-pelicano-mascote'
                 }
                 style={{
-                    flex: '0 0 35%',
-                    width: '100%',
-                    height: 'auto',
+                    position: 'fixed',
+                    left: 0,
+                    right: 0,
+                    // bottom respeita a margem definida
+                    bottom: `${PELICANO_MARGIN_BOTTOM}px`,
                     display: 'flex',
                     justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingBottom: 'clamp(12px, 2vh, 24px)',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    zIndex: isCorrectAnswer ? 10 : 1
+                    alignItems: 'flex-end',
+                    zIndex: isCorrectAnswer ? 10 : 1,
+                    pointerEvents: 'none',
+                    background: 'none',
+                    height: 'auto',
+                    width: '100%',
                 }}
             >
-                <div style={{ position: 'relative', display: 'inline-block' }}>
+                <div style={{ position: 'relative', display: 'inline-block', background: 'none' }}>
                     <img
                         ref={pelicanoImgRef}
                         src={pelicanoImg}
                         alt="Pelicano Mascote"
                         className={isCorrectAnswer ? 'quiz1-pelicano-img-center' : ''}
                         style={{
-                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${pelicanoScale})`,
-                            transformOrigin: 'center center',
-                            transition: isCorrectAnswer ? 'transform 1.2s ease-out' : 'transform 0.3s ease-out',
+                            // Aplica o scale controlado dinamicamente
+                            transform: isCorrectAnswer ? `scale(${pelicanoScale})` : `scale(${pelicanoScale})`,
+                            transformOrigin: 'center bottom',
+                            transition: 'transform 0.75s cubic-bezier(.4,2,.67,.99), opacity 0.75s, filter .3s',
                             display: 'block',
-                            verticalAlign: 'top'
+                            verticalAlign: 'bottom'
                         }}
                     />
                     {/* Pelicano colorido sobreposto */}
@@ -458,10 +469,12 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                             top: 0,
                             left: 0,
                             objectPosition: 'center',
-                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${pelicanoScale})`,
-                            transformOrigin: 'center center',
+                            transform: isCorrectAnswer ? `scale(${pelicanoScale})` : `scale(${pelicanoScale})`,
+                            transformOrigin: 'center bottom',
                             pointerEvents: 'none',
-                            transition: 'transform 1.2s ease-out, opacity 1.2s ease-in-out'
+                            transition: 'transform 0.75s cubic-bezier(.4,2,.67,.99), opacity 1.2s',
+                            width: '100%',
+                            height: '100%'
                         }}
                     />
                 </div>
