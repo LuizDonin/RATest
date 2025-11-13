@@ -5,12 +5,14 @@ import { TutorialScreen } from './screens/TutorialScreen'
 import { TutorialScreen2 } from './screens/TutorialScreen2'
 import { RocketScreen } from './screens/RocketScreen'
 import { ARScreen } from './screens/ARScreen'
+import { ARScreen2 } from './screens/ARScreen2'
 import { ResultScreen } from './screens/ResultScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
 import { AboutScreen } from './screens/AboutScreen'
 import { FinalScreen } from './screens/FinalScreen'
 import { SelfieScreen } from './screens/SelfieScreen'
 import { Quiz1 } from './screens/Quiz1'
+import { Quiz2 } from './screens/Quiz2'
 // import { RADataDisplay } from './RADataDisplay' // Removido
 import type { ScreenType, TransitionType, TransitionDirection } from '../types/screens'
 import '../styles/screens.css'
@@ -140,6 +142,8 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
         return <TutorialScreen2 onNavigate={navigateTo} />
       case 'ar':
         return <ARScreen onNavigate={navigateTo} />
+      case 'ar2':
+        return <ARScreen2 onNavigate={navigateTo} />
       case 'resultado':
         return <ResultScreen onNavigate={navigateTo} />
       case 'final':
@@ -152,6 +156,8 @@ export const ScreenManager: React.FC<ScreenManagerProps> = ({
         return <SelfieScreen onNavigate={navigateTo} />
       case 'quiz1':
         return <Quiz1 onNavigate={navigateTo} />
+      case 'quiz2':
+        return <Quiz2 onNavigate={navigateTo} />
       default:
         console.warn('⚠️ Tela desconhecida:', currentScreen)
         return <LoadingScreen onNavigate={navigateTo} />

@@ -1,4 +1,4 @@
-export type ScreenType = 'loading' | 'cover' | 'tutorial' | 'tutorial2' | 'rocket' | 'ar' | 'resultado' | 'settings' | 'about' | 'final' | 'selfie' | 'custom' | 'quiz1'
+export type ScreenType = 'loading' | 'cover' | 'tutorial' | 'tutorial2' | 'rocket' | 'ar' | 'ar2' | 'resultado' | 'settings' | 'about' | 'final' | 'selfie' | 'custom' | 'quiz1' | 'quiz2'
 
 export type TransitionType =
   | 'fade'

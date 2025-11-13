@@ -6,24 +6,24 @@ import { useRA } from '../../contexts/RAContext'
 import type { ScreenType, TransitionType, TransitionDirection } from '../../types/screens'
 import '../../styles/ar-screen.css'
 
-interface ARScreenProps {
+interface ARScreen2Props {
   onNavigate: (screen: ScreenType, transition?: TransitionType, direction?: TransitionDirection) => void
   title?: string
   subtitle?: string
   backgroundImage?: string
 }
 
-const PELICANO_INITIAL_POSITION = { x: 0, y: 1.6, z: -3 }
+const MACACO_INITIAL_POSITION = { x: 0, y: 1.6, z: -3 }
 
 // Parâmetro: raio do círculo de referência do binóculo em px
 const DEBUG_CIRCLE_RADIUS_PX = 80
 const DEBUG_CIRCLE_RADIUS_PX_SECOND = 80 // Pode ajustar o tamanho caso deseje
 
-const PELICANO_INITIAL_SCALE = 1
-const PELICANO_MAX_SCALE = 2
-const PELICANO_SCALE_TIMER_DURATION = 1.5 // segundos
+const MACACO_INITIAL_SCALE = 1
+const MACACO_MAX_SCALE = 2
+const MACACO_SCALE_TIMER_DURATION = 1.5 // segundos
 
-export const ARScreen: React.FC<ARScreenProps> = ({
+export const ARScreen2: React.FC<ARScreen2Props> = ({
   onNavigate
 }) => {
   const { raData } = useRA()
@@ -38,10 +38,10 @@ export const ARScreen: React.FC<ARScreenProps> = ({
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
-  const pelicanoKeysRef = useRef<Record<string, boolean>>({})
-  const pelicanoMoveAnimationRef = useRef<number | null>(null)
-  const pelicanoPositionRef = useRef<{ x: number, y: number, z: number }>({ ...PELICANO_INITIAL_POSITION })
-  const pelicanoHandlersRef = useRef<{
+  const macacoKeysRef = useRef<Record<string, boolean>>({})
+  const macacoMoveAnimationRef = useRef<number | null>(null)
+  const macacoPositionRef = useRef<{ x: number, y: number, z: number }>({ ...MACACO_INITIAL_POSITION })
+  const macacoHandlersRef = useRef<{
     handleKeyDown: ((e: KeyboardEvent) => void) | null
     handleKeyUp: ((e: KeyboardEvent) => void) | null
   }>({ handleKeyDown: null, handleKeyUp: null })
@@ -54,11 +54,11 @@ export const ARScreen: React.FC<ARScreenProps> = ({
   const lastIsInsideRefRight = useRef<boolean>(false)
 
   // Novos: refs para timer e scale (imperativo)
-  const pelicanoTimerRef = useRef<number>(0) // tempo dentro do círculo, em segundos
-  const pelicanoTimerStartRef = useRef<number | null>(null)
-  const pelicanoScalingRef = useRef<boolean>(false) // indica se está em processo de scale
-  const pelicanoLastInCircleRef = useRef<boolean>(false) // true se estava dentro de qualquer círculo no último frame
-  const pelicanoScaleRef = useRef<number>(PELICANO_INITIAL_SCALE)
+  const macacoTimerRef = useRef<number>(0) // tempo dentro do círculo, em segundos
+  const macacoTimerStartRef = useRef<number | null>(null)
+  const macacoScalingRef = useRef<boolean>(false) // indica se está em processo de scale
+  const macacoLastInCircleRef = useRef<boolean>(false) // true se estava dentro de qualquer círculo no último frame
+  const macacoScaleRef = useRef<number>(MACACO_INITIAL_SCALE)
 
   // Para garantir condição de exibir o botão "começar" apenas uma vez se for necessário
   const buttonAlreadySpawnedRef = useRef<boolean>(false)
@@ -143,8 +143,8 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       setArLoading(false)
       // Iniciar fade-in mesmo sem vídeo após delay
       setTimeout(() => {
-        const pelicanoEl = document.getElementById('pelicano-entity')
-        if (pelicanoEl || !usarAFrame) {
+        const macacoEl = document.getElementById('macaco-entity')
+        if (macacoEl || !usarAFrame) {
           setIsFadingIn(true)
         } else {
           setTimeout(() => setIsFadingIn(true), 200)
@@ -163,6 +163,15 @@ export const ARScreen: React.FC<ARScreenProps> = ({
           if (!retryVideo || !retryVideo.srcObject) {
             console.error('Vídeo ainda não disponível')
             setArLoading(false)
+            // Mesmo sem vídeo, iniciar fade-in após delay
+            setTimeout(() => {
+              const macacoEl = document.getElementById('macaco-entity')
+              if (macacoEl || !usarAFrame) {
+                setIsFadingIn(true)
+              } else {
+                setTimeout(() => setIsFadingIn(true), 200)
+              }
+            }, 500)
             return
           }
         }
@@ -177,8 +186,8 @@ export const ARScreen: React.FC<ARScreenProps> = ({
           // Iniciar fade-in após um delay para garantir que os objetos A-Frame estejam prontos
           setTimeout(() => {
             // Verificar se os objetos foram criados antes de fazer fade-in
-            const pelicanoEl = document.getElementById('pelicano-entity')
-            if (pelicanoEl || !usarAFrame) {
+            const macacoEl = document.getElementById('macaco-entity')
+            if (macacoEl || !usarAFrame) {
               setIsFadingIn(true)
             } else {
               // Se ainda não estiver pronto, tentar novamente
@@ -190,8 +199,8 @@ export const ARScreen: React.FC<ARScreenProps> = ({
           setArLoading(false)
           // Mesmo sem vídeo, iniciar fade-in após delay
           setTimeout(() => {
-            const pelicanoEl = document.getElementById('pelicano-entity')
-            if (pelicanoEl || !usarAFrame) {
+            const macacoEl = document.getElementById('macaco-entity')
+            if (macacoEl || !usarAFrame) {
               setIsFadingIn(true)
             } else {
               setTimeout(() => setIsFadingIn(true), 200)
@@ -203,8 +212,8 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         setArLoading(false)
         // Mesmo com erro, iniciar fade-in após delay
         setTimeout(() => {
-          const pelicanoEl = document.getElementById('pelicano-entity')
-          if (pelicanoEl || !usarAFrame) {
+          const macacoEl = document.getElementById('macaco-entity')
+          if (macacoEl || !usarAFrame) {
             setIsFadingIn(true)
           } else {
             setTimeout(() => setIsFadingIn(true), 200)
@@ -294,14 +303,14 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       sceneEl.appendChild(assets)
     }
 
-    // Pelicano (mantido)
-    let pelicanoImg = assets.querySelector('#pelicanoTexture')
-    if (!pelicanoImg) {
-      pelicanoImg = document.createElement('img')
-      pelicanoImg.id = 'pelicanoTexture'
-      pelicanoImg.src = normalizePath('assets/images/pelicano.png')
-      pelicanoImg.setAttribute('crossorigin', 'anonymous')
-      assets.appendChild(pelicanoImg)
+    // Macaco (usando macaco1.png)
+    let macacoImg = assets.querySelector('#macacoTexture')
+    if (!macacoImg) {
+      macacoImg = document.createElement('img')
+      macacoImg.id = 'macacoTexture'
+      macacoImg.src = normalizePath('assets/images/macaco1.png')
+      macacoImg.setAttribute('crossorigin', 'anonymous')
+      assets.appendChild(macacoImg)
     }
 
     // Binóculos asset (mantido apenas para referência; imagem real será na tela, não mais como a-image)
@@ -314,37 +323,37 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       assets.appendChild(binoculosImg)
     }
 
-    // Pelicano entity
-    let pelicano = document.getElementById('pelicano-entity')
-    if (!pelicano) {
-      pelicano = document.createElement('a-image')
-      pelicano.id = 'pelicano-entity'
-      pelicano.setAttribute('src', '#pelicanoTexture')
-      pelicano.setAttribute('width', '0.8')
-      pelicano.setAttribute('height', '0.8')
-      pelicano.setAttribute('position', `${PELICANO_INITIAL_POSITION.x} ${PELICANO_INITIAL_POSITION.y} ${PELICANO_INITIAL_POSITION.z}`)
-      pelicano.setAttribute('look-at', '[camera]')
+    // Macaco entity
+    let macaco = document.getElementById('macaco-entity')
+    if (!macaco) {
+      macaco = document.createElement('a-image')
+      macaco.id = 'macaco-entity'
+      macaco.setAttribute('src', '#macacoTexture')
+      macaco.setAttribute('width', '0.8')
+      macaco.setAttribute('height', '0.8')
+      macaco.setAttribute('position', `${MACACO_INITIAL_POSITION.x} ${MACACO_INITIAL_POSITION.y} ${MACACO_INITIAL_POSITION.z}`)
+      macaco.setAttribute('look-at', '[camera]')
       // Inicializa escala no valor inicial
-      pelicano.setAttribute('scale', `${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE}`)
-      sceneEl.appendChild(pelicano)
-      pelicanoPositionRef.current = { ...PELICANO_INITIAL_POSITION }
-      pelicanoScaleRef.current = PELICANO_INITIAL_SCALE
+      macaco.setAttribute('scale', `${MACACO_INITIAL_SCALE} ${MACACO_INITIAL_SCALE} ${MACACO_INITIAL_SCALE}`)
+      sceneEl.appendChild(macaco)
+      macacoPositionRef.current = { ...MACACO_INITIAL_POSITION }
+      macacoScaleRef.current = MACACO_INITIAL_SCALE
     } else {
-      let position = pelicano.getAttribute('position')
+      let position = macaco.getAttribute('position')
       if (position && typeof position === 'string') {
         const [x, y, z] = position.split(' ').map(Number)
-        pelicanoPositionRef.current = {
-          x: typeof x === 'number' && !isNaN(x) ? x : PELICANO_INITIAL_POSITION.x,
-          y: typeof y === 'number' && !isNaN(y) ? y : PELICANO_INITIAL_POSITION.y,
-          z: typeof z === 'number' && !isNaN(z) ? z : PELICANO_INITIAL_POSITION.z
+        macacoPositionRef.current = {
+          x: typeof x === 'number' && !isNaN(x) ? x : MACACO_INITIAL_POSITION.x,
+          y: typeof y === 'number' && !isNaN(y) ? y : MACACO_INITIAL_POSITION.y,
+          z: typeof z === 'number' && !isNaN(z) ? z : MACACO_INITIAL_POSITION.z
         }
       } else {
-        pelicanoPositionRef.current = { ...PELICANO_INITIAL_POSITION }
-        pelicano.setAttribute('position', `${PELICANO_INITIAL_POSITION.x} ${PELICANO_INITIAL_POSITION.y} ${PELICANO_INITIAL_POSITION.z}`)
+        macacoPositionRef.current = { ...MACACO_INITIAL_POSITION }
+        macaco.setAttribute('position', `${MACACO_INITIAL_POSITION.x} ${MACACO_INITIAL_POSITION.y} ${MACACO_INITIAL_POSITION.z}`)
       }
-      // Inicializa a escala do pelicano ao valor inicial na reinstanciação
-      pelicano.setAttribute('scale', `${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE}`)
-      pelicanoScaleRef.current = PELICANO_INITIAL_SCALE
+      // Inicializa a escala do macaco ao valor inicial na reinstanciação
+      macaco.setAttribute('scale', `${MACACO_INITIAL_SCALE} ${MACACO_INITIAL_SCALE} ${MACACO_INITIAL_SCALE}`)
+      macacoScaleRef.current = MACACO_INITIAL_SCALE
     }
 
     // REMOVE binoculos-entity (não mais na cena 3D)
@@ -358,26 +367,26 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       let key = e.key
       if (key === 'PageUp' || key === 'PageDown') {
-        pelicanoKeysRef.current[key] = true
+        macacoKeysRef.current[key] = true
       } else {
-        pelicanoKeysRef.current[key.toLowerCase()] = true
+        macacoKeysRef.current[key.toLowerCase()] = true
       }
     }
 
     const handleKeyUp = (e: KeyboardEvent) => {
       let key = e.key
       if (key === 'PageUp' || key === 'PageDown') {
-        pelicanoKeysRef.current[key] = false
+        macacoKeysRef.current[key] = false
       } else {
-        pelicanoKeysRef.current[key.toLowerCase()] = false
+        macacoKeysRef.current[key.toLowerCase()] = false
       }
     }
 
-    pelicanoHandlersRef.current.handleKeyDown = handleKeyDown
-    pelicanoHandlersRef.current.handleKeyUp = handleKeyUp
+    macacoHandlersRef.current.handleKeyDown = handleKeyDown
+    macacoHandlersRef.current.handleKeyUp = handleKeyUp
 
-    // --- Projeção do pelicano para tela/círculo de debug usando a câmera real do A-Frame
-    const projectPelicanoToScreen = (pelicanoPosition: {x:number, y:number, z:number}) => {
+    // --- Projeção do macaco para tela/círculo de debug usando a câmera real do A-Frame
+    const projectMacacoToScreen = (macacoPosition: {x:number, y:number, z:number}) => {
       // Obter a câmera do A-Frame
       const cameraEl = document.getElementById('camera') as any
       if (!cameraEl) {
@@ -394,34 +403,34 @@ export const ARScreen: React.FC<ARScreenProps> = ({
 
       const THREE = (window as any).THREE
 
-      // Obter a posição do pelicano no espaço 3D
-      const pelicanoEl = document.getElementById('pelicano-entity') as any
-      if (!pelicanoEl) {
+      // Obter a posição do macaco no espaço 3D
+      const macacoEl = document.getElementById('macaco-entity') as any
+      if (!macacoEl) {
         return null
       }
 
-      // Obter a posição do pelicano no espaço mundial (world space)
-      // Tentar obter o objeto 3D do pelicano (pode ser 'mesh' ou o objeto raiz)
-      let pelicanoObj3D = pelicanoEl.getObject3D && pelicanoEl.getObject3D('mesh')
-      if (!pelicanoObj3D) {
+      // Obter a posição do macaco no espaço mundial (world space)
+      // Tentar obter o objeto 3D do macaco (pode ser 'mesh' ou o objeto raiz)
+      let macacoObj3D = macacoEl.getObject3D && macacoEl.getObject3D('mesh')
+      if (!macacoObj3D) {
         // Tentar obter o objeto raiz se não houver mesh
-        pelicanoObj3D = pelicanoEl.object3D || (pelicanoEl.getObject3D && pelicanoEl.getObject3D('object3d'))
+        macacoObj3D = macacoEl.object3D || (macacoEl.getObject3D && macacoEl.getObject3D('object3d'))
       }
 
       let worldPos: any
 
-      if (pelicanoObj3D && pelicanoObj3D.getWorldPosition) {
+      if (macacoObj3D && macacoObj3D.getWorldPosition) {
         // Usar a posição mundial do objeto 3D (mais preciso, considera rotações e transformações)
         worldPos = new THREE.Vector3()
-        pelicanoObj3D.getWorldPosition(worldPos)
+        macacoObj3D.getWorldPosition(worldPos)
       } else {
         // Fallback: usar a posição do atributo (menos preciso, mas funciona)
-        const posAttr = pelicanoEl.getAttribute('position')
+        const posAttr = macacoEl.getAttribute('position')
         if (posAttr && typeof posAttr === 'object' && 'x' in posAttr) {
           worldPos = new THREE.Vector3(posAttr.x, posAttr.y, posAttr.z)
         } else {
           // Último fallback: usar a posição de referência
-          worldPos = new THREE.Vector3(pelicanoPosition.x, pelicanoPosition.y, pelicanoPosition.z)
+          worldPos = new THREE.Vector3(macacoPosition.x, macacoPosition.y, macacoPosition.z)
         }
       }
       
@@ -443,40 +452,40 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     }
 
     // -- Loop principal da animação + detecção do círculo + scale
-    const movePelicano = (nowTs?: number) => {
-      const pelicanoEl = document.getElementById('pelicano-entity')
-      if (!pelicanoEl) {
-        pelicanoMoveAnimationRef.current = null
+    const moveMacaco = (nowTs?: number) => {
+      const macacoEl = document.getElementById('macaco-entity')
+      if (!macacoEl) {
+        macacoMoveAnimationRef.current = null
         return
       }
 
-      let pos = pelicanoPositionRef.current
+      let pos = macacoPositionRef.current
       let newX = pos.x
       let newY = pos.y
       let newZ = pos.z
 
       let moved = false
-      if (pelicanoKeysRef.current['w']) {
+      if (macacoKeysRef.current['w']) {
         newZ += moveSpeed
         moved = true
       }
-      if (pelicanoKeysRef.current['s']) {
+      if (macacoKeysRef.current['s']) {
         newZ -= moveSpeed
         moved = true
       }
-      if (pelicanoKeysRef.current['a']) {
+      if (macacoKeysRef.current['a']) {
         newX -= moveSpeed
         moved = true
       }
-      if (pelicanoKeysRef.current['d']) {
+      if (macacoKeysRef.current['d']) {
         newX += moveSpeed
         moved = true
       }
-      if (pelicanoKeysRef.current['PageUp']) {
+      if (macacoKeysRef.current['PageUp']) {
         newY += moveSpeed
         moved = true
       }
-      if (pelicanoKeysRef.current['PageDown']) {
+      if (macacoKeysRef.current['PageDown']) {
         newY -= moveSpeed
         moved = true
       }
@@ -489,11 +498,11 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       newZ = Math.max(minZ, Math.min(maxZ, newZ))
 
       if (moved) {
-        pelicanoPositionRef.current = { x: newX, y: newY, z: newZ }
-        pelicanoEl.setAttribute('position', `${newX} ${newY} ${newZ}`)
+        macacoPositionRef.current = { x: newX, y: newY, z: newZ }
+        macacoEl.setAttribute('position', `${newX} ${newY} ${newZ}`)
       }
 
-      // === 2D debug: projeta pelicano e verifica se colide com círculos relativos ao binóculo
+      // === 2D debug: projeta macaco e verifica se colide com círculos relativos ao binóculo
       let isInside = false
       let isInsideR = false
 
@@ -502,8 +511,8 @@ export const ARScreen: React.FC<ARScreenProps> = ({
         if (ctx) {
           ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
 
-          // Usar a posição atual do pelicano (pode ter mudado devido à rotação da câmera)
-          const screenPt = projectPelicanoToScreen(pelicanoPositionRef.current)
+          // Usar a posição atual do macaco (pode ter mudado devido à rotação da câmera)
+          const screenPt = projectMacacoToScreen(macacoPositionRef.current)
 
           // Desenha o círculo central do binóculos
           const {centerX, centerY, radius} = getDebugCircleProps()
@@ -525,7 +534,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
           ctx.stroke()
           ctx.globalAlpha = 1
 
-          // Desenha a posição projetada do pelicano
+          // Desenha a posição projetada do macaco
           if (screenPt) {
             ctx.beginPath()
             ctx.arc(screenPt.x, screenPt.y, 12, 0, Math.PI * 2)
@@ -540,7 +549,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
 
             if (isInside && !lastIsInsideRef.current) {
               lastIsInsideRef.current = true
-              console.log("[DEBUG] Pelicano projetado está ENTRANDO no círculo de debug dos binóculos (central)!")
+              console.log("[DEBUG] Macaco projetado está ENTRANDO no círculo de debug dos binóculos (central)!")
             } else if (!isInside && lastIsInsideRef.current) {
               lastIsInsideRef.current = false
             }
@@ -553,7 +562,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
 
             if (isInsideR && !lastIsInsideRefRight.current) {
               lastIsInsideRefRight.current = true
-              console.log("[DEBUG] Pelicano projetado está ENTRANDO no círculo de debug da direita dos binóculos!")
+              console.log("[DEBUG] Macaco projetado está ENTRANDO no círculo de debug da direita dos binóculos!")
             } else if (!isInsideR && lastIsInsideRefRight.current) {
               lastIsInsideRefRight.current = false
             }
@@ -567,67 +576,67 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       // ================================
       // --- Lógica do scale animado  ---
       // ================================
-      const isPelicanoInAnyCircle = isInside || isInsideR;
+      const isMacacoInAnyCircle = isInside || isInsideR;
 
       const now = typeof nowTs === 'number' ? nowTs : performance.now();
       // now em ms, precisamos segundos para timer
 
-      if (isPelicanoInAnyCircle) {
-        if (!pelicanoLastInCircleRef.current) {
+      if (isMacacoInAnyCircle) {
+        if (!macacoLastInCircleRef.current) {
           // Entrou em círculo: inicia timer
-          pelicanoTimerStartRef.current = now
-          pelicanoTimerRef.current = 0
-          pelicanoScalingRef.current = true
+          macacoTimerStartRef.current = now
+          macacoTimerRef.current = 0
+          macacoScalingRef.current = true
         } else {
           // Já está dentro, atualiza timer
-          if (pelicanoTimerStartRef.current != null) {
-            pelicanoTimerRef.current = (now - pelicanoTimerStartRef.current) / 1000 // em segundos
+          if (macacoTimerStartRef.current != null) {
+            macacoTimerRef.current = (now - macacoTimerStartRef.current) / 1000 // em segundos
           } else {
-            pelicanoTimerRef.current = 0
+            macacoTimerRef.current = 0
           }
         }
         // Calcula o novo scale proporcional
-        let progress = Math.min(pelicanoTimerRef.current / PELICANO_SCALE_TIMER_DURATION, 1)
-        let targetScale = PELICANO_INITIAL_SCALE + (PELICANO_MAX_SCALE - PELICANO_INITIAL_SCALE) * progress
+        let progress = Math.min(macacoTimerRef.current / MACACO_SCALE_TIMER_DURATION, 1)
+        let targetScale = MACACO_INITIAL_SCALE + (MACACO_MAX_SCALE - MACACO_INITIAL_SCALE) * progress
 
-        // Aplica o scale no pelicano (A-Frame entity)
-        if (pelicanoScaleRef.current !== targetScale) {
-          pelicanoEl.setAttribute('scale', `${targetScale} ${targetScale} ${targetScale}`)
-          pelicanoScaleRef.current = targetScale
+        // Aplica o scale no macaco (A-Frame entity)
+        if (macacoScaleRef.current !== targetScale) {
+          macacoEl.setAttribute('scale', `${targetScale} ${targetScale} ${targetScale}`)
+          macacoScaleRef.current = targetScale
         }
 
         // ----------- Lógica para mostrar o botão "começar" -------------
         if (
-          pelicanoTimerRef.current >= PELICANO_SCALE_TIMER_DURATION &&
+          macacoTimerRef.current >= MACACO_SCALE_TIMER_DURATION &&
           !buttonAlreadySpawnedRef.current
         ) {
           setShowComecarButton(true)
           buttonAlreadySpawnedRef.current = true
         }
       } else {
-        if (pelicanoLastInCircleRef.current || pelicanoScalingRef.current) {
+        if (macacoLastInCircleRef.current || macacoScalingRef.current) {
           // Saiu dos círculos: reseta timer e scale
-          pelicanoTimerRef.current = 0
-          pelicanoTimerStartRef.current = null
-          pelicanoScalingRef.current = false
+          macacoTimerRef.current = 0
+          macacoTimerStartRef.current = null
+          macacoScalingRef.current = false
 
-          if (pelicanoScaleRef.current !== PELICANO_INITIAL_SCALE) {
-            pelicanoEl.setAttribute('scale', `${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE} ${PELICANO_INITIAL_SCALE}`)
-            pelicanoScaleRef.current = PELICANO_INITIAL_SCALE
+          if (macacoScaleRef.current !== MACACO_INITIAL_SCALE) {
+            macacoEl.setAttribute('scale', `${MACACO_INITIAL_SCALE} ${MACACO_INITIAL_SCALE} ${MACACO_INITIAL_SCALE}`)
+            macacoScaleRef.current = MACACO_INITIAL_SCALE
           }
         }
         // Se sair dos círculos, esconde o botão
         setShowComecarButton(false)
         buttonAlreadySpawnedRef.current = false
       }
-      pelicanoLastInCircleRef.current = isPelicanoInAnyCircle
+      macacoLastInCircleRef.current = isMacacoInAnyCircle
 
-      pelicanoMoveAnimationRef.current = requestAnimationFrame(movePelicano)
+      macacoMoveAnimationRef.current = requestAnimationFrame(moveMacaco)
     }
 
     window.addEventListener('keydown', handleKeyDown)
     window.addEventListener('keyup', handleKeyUp)
-    movePelicano()
+    moveMacaco()
 
     const handleResize = () => {
       if (canvasRef.current) {
@@ -639,36 +648,36 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     handleResize()
 
     return () => {
-      if (pelicanoMoveAnimationRef.current !== null) {
-        cancelAnimationFrame(pelicanoMoveAnimationRef.current)
-        pelicanoMoveAnimationRef.current = null
+      if (macacoMoveAnimationRef.current !== null) {
+        cancelAnimationFrame(macacoMoveAnimationRef.current)
+        macacoMoveAnimationRef.current = null
       }
 
-      if (pelicanoHandlersRef.current.handleKeyDown) {
-        window.removeEventListener('keydown', pelicanoHandlersRef.current.handleKeyDown)
+      if (macacoHandlersRef.current.handleKeyDown) {
+        window.removeEventListener('keydown', macacoHandlersRef.current.handleKeyDown)
       }
-      if (pelicanoHandlersRef.current.handleKeyUp) {
-        window.removeEventListener('keyup', pelicanoHandlersRef.current.handleKeyUp)
+      if (macacoHandlersRef.current.handleKeyUp) {
+        window.removeEventListener('keyup', macacoHandlersRef.current.handleKeyUp)
       }
       window.removeEventListener('resize', handleResize)
 
-      pelicanoKeysRef.current = {}
-      pelicanoHandlersRef.current = { handleKeyDown: null, handleKeyUp: null }
+      macacoKeysRef.current = {}
+      macacoHandlersRef.current = { handleKeyDown: null, handleKeyUp: null }
 
-      pelicanoTimerRef.current = 0
-      pelicanoTimerStartRef.current = null
-      pelicanoScalingRef.current = false
-      pelicanoLastInCircleRef.current = false
-      pelicanoScaleRef.current = PELICANO_INITIAL_SCALE
+      macacoTimerRef.current = 0
+      macacoTimerStartRef.current = null
+      macacoScalingRef.current = false
+      macacoLastInCircleRef.current = false
+      macacoScaleRef.current = MACACO_INITIAL_SCALE
       buttonAlreadySpawnedRef.current = false
 
       const cube = document.getElementById('head-cube')
       if (cube) {
         cube.remove()
       }
-      const pelicanoEl = document.getElementById('pelicano-entity')
-      if (pelicanoEl) {
-        pelicanoEl.remove()
+      const macacoEl = document.getElementById('macaco-entity')
+      if (macacoEl) {
+        macacoEl.remove()
       }
       const cameraEl = document.getElementById('camera')
       if (cameraEl) {
@@ -782,7 +791,7 @@ export const ARScreen: React.FC<ARScreenProps> = ({
       {/* Botão "Começar" - centralizado horizontalmente, mas cerca de 30% abaixo do topo da tela */}
       {showComecarButton && (
         <button
-          onClick={() => onNavigate('quiz1', 'zoom-out', 'up')}
+          onClick={() => onNavigate('quiz2', 'zoom-out', 'up')}
           style={{
             position: 'fixed',
             left: '50%',
@@ -819,3 +828,4 @@ export const ARScreen: React.FC<ARScreenProps> = ({
     </div>
   )
 }
+

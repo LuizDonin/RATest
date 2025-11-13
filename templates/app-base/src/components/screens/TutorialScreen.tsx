@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import type { ScreenType, TransitionType, TransitionDirection } from '../../types/screens'
+import { LandscapeBlocker } from '../LandscapeBlocker'
 import { initializeGlobal, requestDeviceOrientationPermission } from '../../utils/globalInit'
 import '../../styles/tutorial-screen.css'
 
@@ -88,15 +89,17 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({
   const btnComecarImage = normalizePath('assets/images/btn-comecar.png')
 
   return (
-    <div
-      className="tutorial-screen"
-      style={{
-        backgroundImage: `url("${bgImage}")`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat'
-      }}
-    >
+    <>
+      <LandscapeBlocker />
+      <div
+        className="tutorial-screen"
+        style={{
+          backgroundImage: `url("${bgImage}")`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
       {/* Imagem central do tutorial */}
       <div className="tutorial-panel-container">
         <img
@@ -123,5 +126,6 @@ export const TutorialScreen: React.FC<TutorialScreenProps> = ({
         />
       </div>
     </div>
+    </>
   )
 }

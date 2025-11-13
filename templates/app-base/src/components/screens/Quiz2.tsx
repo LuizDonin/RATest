@@ -3,25 +3,25 @@ import type { ScreenType, TransitionType, TransitionDirection } from '../../type
 import { LandscapeBlocker } from '../LandscapeBlocker'
 import '../../styles/quiz1screen.css'
 
-interface Quiz1Props {
+interface Quiz2Props {
     onNavigate: (screen: ScreenType, transition?: TransitionType, direction?: TransitionDirection) => void
     title?: string
     subtitle?: string
     backgroundImage?: string
 }
 
-export const Quiz1: React.FC<Quiz1Props> = ({
+export const Quiz2: React.FC<Quiz2Props> = ({
     onNavigate
 }) => {
     const [isMounted, setIsMounted] = useState(false)
-    const [pelicanoScale, setPelicanoScale] = useState(1)
+    const [macacoScale, setMacacoScale] = useState(1)
     const [isCorrectAnswer, setIsCorrectAnswer] = useState(false)
-    const [showColoredPelicano, setShowColoredPelicano] = useState(false)
-    const [showPelicanoTop, setShowPelicanoTop] = useState(false)
+    const [showColoredMacaco, setShowColoredMacaco] = useState(false)
+    const [showMacacoTop, setShowMacacoTop] = useState(false)
     const quizSectionRef = useRef<HTMLDivElement>(null)
-    const pelicanoImgRef = useRef<HTMLImageElement>(null)
-    const pelicanoColoredImgRef = useRef<HTMLImageElement>(null)
-    const pelicanoContainerRef = useRef<HTMLDivElement>(null)
+    const macacoImgRef = useRef<HTMLImageElement>(null)
+    const macacoColoredImgRef = useRef<HTMLImageElement>(null)
+    const macacoContainerRef = useRef<HTMLDivElement>(null)
 
     // Trigger das animações quando o componente monta
     useEffect(() => {
@@ -48,90 +48,90 @@ export const Quiz1: React.FC<Quiz1Props> = ({
     }
 
     // Imagens
-    const enunciadoImg = normalizePath('assets/images/enunciado1.png')
-    const galinhaImg = normalizePath('assets/images/Galinha.png')
+    const enunciadoImg = normalizePath('assets/images/enunciado2.png')
+    const vacaImg = normalizePath('assets/images/Vaca.png')
     const macacoImg = normalizePath('assets/images/Macaco.png')
-    const pelicanoRImg = normalizePath('assets/images/PelicanoR.png')
-    const pelicanoImg = normalizePath('assets/images/pelicano.png')
-    const pelicanoColoredImg = normalizePath('assets/images/pelicanocor.png')
-    const pelicanoTopImg = normalizePath('assets/images/pelicanotop.png')
+    const sabiaImg = normalizePath('assets/images/Sabia.png')
+    const macaco1Img = normalizePath('assets/images/macaco1.png')
+    const macacoColoredImg = normalizePath('assets/images/macacocor.png')
+    const macacoTopImg = normalizePath('assets/images/macacotop.png')
     const bgCapaImg = normalizePath('assets/images/bg-capa.png')
 
     // Handler para respostas
     const handleResposta = (opcao: string) => {
-        if (opcao === 'PelicanoR') {
+        if (opcao === 'Macaco') {
             // Resposta correta
-            console.log('[QUIZ1] Resposta CORRETA: PelicanoR')
+            console.log('[QUIZ2] Resposta CORRETA: Macaco')
             setIsCorrectAnswer(true)
             
-            // Após a animação de movimento do pelicano (1.2s), mostrar o pelicano colorido e o pelicano top
+            // Após a animação de movimento do macaco (1.2s), mostrar o macaco colorido e o macaco top
             setTimeout(() => {
-                setShowColoredPelicano(true)
-                setShowPelicanoTop(true)
-            }, 1200) // 1.2s (animação de movimento do pelicano)
+                setShowColoredMacaco(true)
+                setShowMacacoTop(true)
+            }, 1200) // 1.2s (animação de movimento do macaco)
             
-            // Após mostrar o pelicano colorido, navegar para ARScreen2
+            // Após mostrar o macaco colorido, navegar para ResultScreen
             setTimeout(() => {
-                onNavigate('ar2', 'fade', 'right')
+                onNavigate('resultado', 'fade', 'right')
             }, 3000) // 3s após a resposta correta (1.2s animação + tempo para ver o resultado)
         }
         // Não faz nada nas outras
     }
 
-    // Função para calcular e ajustar o scale do pelicano
-    const adjustPelicanoScale = useCallback(() => {
-        if (!quizSectionRef.current || !pelicanoImgRef.current || !pelicanoContainerRef.current) {
+    // Função para calcular e ajustar o scale do macaco
+    const adjustMacacoScale = useCallback(() => {
+        if (!quizSectionRef.current || !macacoImgRef.current || !macacoContainerRef.current) {
             return
         }
 
         const quizSection = quizSectionRef.current
-        const pelicanoImg = pelicanoImgRef.current
-        const pelicanoContainer = pelicanoContainerRef.current
+        const macacoImg = macacoImgRef.current
+        const macacoContainer = macacoContainerRef.current
 
         // Obter dimensões
         const quizRect = quizSection.getBoundingClientRect()
-        const pelicanoRect = pelicanoImg.getBoundingClientRect()
-        const containerRect = pelicanoContainer.getBoundingClientRect()
+        const macacoRect = macacoImg.getBoundingClientRect()
+        const containerRect = macacoContainer.getBoundingClientRect()
 
         // Calcular se há sobreposição
-        // O pelicano está sobrepondo se o topo da imagem está acima do bottom do quiz
-        const pelicanoTop = pelicanoRect.top
+        // O macaco está sobrepondo se o topo da imagem está acima do bottom do quiz
+        const macacoTop = macacoRect.top
         const quizBottom = quizRect.bottom
 
         // Se houver sobreposição, calcular o scale necessário
-        if (pelicanoTop < quizBottom) {
+        if (macacoTop < quizBottom) {
             // Calcular quanto precisa reduzir
-            const overlap = quizBottom - pelicanoTop
-            const pelicanoHeight = pelicanoRect.height || 1
-            const scaleReduction = Math.max(0.3, Math.min(1, 1 - (overlap / pelicanoHeight)))
-            setPelicanoScale(scaleReduction)
+            const overlap = quizBottom - macacoTop
+            const macacoHeight = macacoRect.height || 1
+            const scaleReduction = Math.max(0.3, Math.min(1, 1 - (overlap / macacoHeight)))
+            setMacacoScale(scaleReduction)
         } else {
             // Sem sobreposição, usar scale 1 (ou o máximo que cabe no container)
             const availableHeight = containerRect.height
-            const naturalHeight = pelicanoImg.naturalHeight || pelicanoRect.height || availableHeight
+            const naturalHeight = macacoImg.naturalHeight || macacoRect.height || availableHeight
             
             // Se a imagem natural é maior que o espaço disponível, calcular scale
             if (naturalHeight > availableHeight && availableHeight > 0) {
                 const maxScale = availableHeight / naturalHeight
-                setPelicanoScale(Math.min(1, maxScale))
+                setMacacoScale(Math.min(1, maxScale))
             } else {
-                setPelicanoScale(1)
+                setMacacoScale(1)
             }
         }
     }, [])
 
-    // Sincronizar dimensões do pelicano colorido com o original
+    // Sincronizar dimensões do macaco colorido com o original
     useEffect(() => {
-        const syncPelicanoDimensions = () => {
-            if (pelicanoImgRef.current && pelicanoColoredImgRef.current) {
-                const original = pelicanoImgRef.current
-                const colored = pelicanoColoredImgRef.current
+        const syncMacacoDimensions = () => {
+            if (macacoImgRef.current && macacoColoredImgRef.current) {
+                const original = macacoImgRef.current
+                const colored = macacoColoredImgRef.current
                 
                 // Obter dimensões reais da imagem original (sem transform)
                 const width = original.offsetWidth || original.naturalWidth
                 const height = original.offsetHeight || original.naturalHeight
                 
-                // Aplicar as mesmas dimensões ao pelicano colorido
+                // Aplicar as mesmas dimensões ao macaco colorido
                 if (width > 0 && height > 0) {
                     colored.style.width = width + 'px'
                     colored.style.height = height + 'px'
@@ -140,67 +140,67 @@ export const Quiz1: React.FC<Quiz1Props> = ({
         }
 
         // Sincronizar quando as imagens carregarem
-        const originalImg = pelicanoImgRef.current
-        const coloredImg = pelicanoColoredImgRef.current
+        const originalImg = macacoImgRef.current
+        const coloredImg = macacoColoredImgRef.current
 
         if (originalImg) {
             if (originalImg.complete) {
-                setTimeout(syncPelicanoDimensions, 100)
+                setTimeout(syncMacacoDimensions, 100)
             } else {
                 originalImg.addEventListener('load', () => {
-                    setTimeout(syncPelicanoDimensions, 100)
+                    setTimeout(syncMacacoDimensions, 100)
                 })
             }
         }
 
         if (coloredImg) {
             if (coloredImg.complete) {
-                setTimeout(syncPelicanoDimensions, 100)
+                setTimeout(syncMacacoDimensions, 100)
             } else {
                 coloredImg.addEventListener('load', () => {
-                    setTimeout(syncPelicanoDimensions, 100)
+                    setTimeout(syncMacacoDimensions, 100)
                 })
             }
         }
 
-        // Sincronizar quando o pelicano centralizar
+        // Sincronizar quando o macaco centralizar
         if (isCorrectAnswer) {
-            setTimeout(syncPelicanoDimensions, 100) // Imediato
-            setTimeout(syncPelicanoDimensions, 850) // Após a animação de centralização
+            setTimeout(syncMacacoDimensions, 100) // Imediato
+            setTimeout(syncMacacoDimensions, 850) // Após a animação de centralização
         }
 
-        // Sincronizar quando mostrar o pelicano colorido
-        if (showColoredPelicano) {
-            setTimeout(syncPelicanoDimensions, 50)
+        // Sincronizar quando mostrar o macaco colorido
+        if (showColoredMacaco) {
+            setTimeout(syncMacacoDimensions, 50)
         }
 
         return () => {
             if (originalImg) {
-                originalImg.removeEventListener('load', syncPelicanoDimensions)
+                originalImg.removeEventListener('load', syncMacacoDimensions)
             }
             if (coloredImg) {
-                coloredImg.removeEventListener('load', syncPelicanoDimensions)
+                coloredImg.removeEventListener('load', syncMacacoDimensions)
             }
         }
-    }, [isMounted, isCorrectAnswer, showColoredPelicano])
+    }, [isMounted, isCorrectAnswer, showColoredMacaco])
 
     // Monitorar mudanças de tamanho e ajustar scale
     useEffect(() => {
         if (!isMounted) return
 
         // Ajustar quando a imagem carregar
-        const pelicanoImg = pelicanoImgRef.current
-        if (pelicanoImg) {
-            if (pelicanoImg.complete) {
-                adjustPelicanoScale()
+        const macacoImg = macacoImgRef.current
+        if (macacoImg) {
+            if (macacoImg.complete) {
+                adjustMacacoScale()
             } else {
-                pelicanoImg.addEventListener('load', adjustPelicanoScale)
+                macacoImg.addEventListener('load', adjustMacacoScale)
             }
         }
 
         // Ajustar em resize e orientation change
         const handleResize = () => {
-            setTimeout(adjustPelicanoScale, 100)
+            setTimeout(adjustMacacoScale, 100)
         }
 
         window.addEventListener('resize', handleResize)
@@ -208,28 +208,28 @@ export const Quiz1: React.FC<Quiz1Props> = ({
 
         // Usar ResizeObserver para detectar mudanças nos elementos
         const resizeObserver = new ResizeObserver(() => {
-            setTimeout(adjustPelicanoScale, 50)
+            setTimeout(adjustMacacoScale, 50)
         })
 
         if (quizSectionRef.current) {
             resizeObserver.observe(quizSectionRef.current)
         }
-        if (pelicanoContainerRef.current) {
-            resizeObserver.observe(pelicanoContainerRef.current)
+        if (macacoContainerRef.current) {
+            resizeObserver.observe(macacoContainerRef.current)
         }
-        if (pelicanoImgRef.current) {
-            resizeObserver.observe(pelicanoImgRef.current)
+        if (macacoImgRef.current) {
+            resizeObserver.observe(macacoImgRef.current)
         }
 
         return () => {
             window.removeEventListener('resize', handleResize)
             window.removeEventListener('orientationchange', handleResize)
-            if (pelicanoImg) {
-                pelicanoImg.removeEventListener('load', adjustPelicanoScale)
+            if (macacoImg) {
+                macacoImg.removeEventListener('load', adjustMacacoScale)
             }
             resizeObserver.disconnect()
         }
-    }, [isMounted, adjustPelicanoScale])
+    }, [isMounted, adjustMacacoScale])
 
     return (
         <>
@@ -251,11 +251,11 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                     margin: 0
                 }}
             >
-            {/* Pelicano Top - aparece no topo após centralização */}
-            {showPelicanoTop && (
+            {/* Macaco Top - aparece no topo após centralização */}
+            {showMacacoTop && (
                 <img
-                    src={pelicanoTopImg}
-                    alt="Pelicano Top"
+                    src={macacoTopImg}
+                    alt="Macaco Top"
                     className="quiz1-pelicano-top"
                     style={{
                         position: 'fixed',
@@ -329,7 +329,7 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         padding: '0 5%'
                     }}
                 >
-                {/* Galinha */}
+                {/* Vaca */}
                 <button
                     type="button"
                     className={
@@ -337,7 +337,7 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         isCorrectAnswer ? 'quiz1-option-exit' :
                         'quiz1-option'
                     }
-                    onClick={() => handleResposta('Galinha')}
+                    onClick={() => handleResposta('Vaca')}
                     disabled={isCorrectAnswer}
                     style={{
                         background: 'none',
@@ -350,8 +350,8 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                     }}
                 >
                     <img
-                        src={galinhaImg}
-                        alt="Galinha"
+                        src={vacaImg}
+                        alt="Vaca"
                         style={{
                             width: '100%',
                             height: 'auto',
@@ -360,7 +360,7 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         }}
                     />
                 </button>
-                {/* Macaco */}
+                {/* Macaco (correta) */}
                 <button
                     type="button"
                     className={
@@ -391,7 +391,7 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         }}
                     />
                 </button>
-                {/* PelicanoR (correta) */}
+                {/* Sabia */}
                 <button
                     type="button"
                     className={
@@ -399,7 +399,7 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         isCorrectAnswer ? 'quiz1-option-exit' :
                         'quiz1-option'
                     }
-                    onClick={() => handleResposta('PelicanoR')}
+                    onClick={() => handleResposta('Sabia')}
                     disabled={isCorrectAnswer}
                     style={{
                         background: 'none',
@@ -412,8 +412,8 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                     }}
                 >
                     <img
-                        src={pelicanoRImg}
-                        alt="Pelicano"
+                        src={sabiaImg}
+                        alt="Sabia"
                         style={{
                             width: '100%',
                             height: 'auto',
@@ -425,9 +425,9 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                 </div>
             </div>
 
-            {/* Seção do Pelicano - 35% da altura */}
+            {/* Seção do Macaco - 35% da altura */}
             <div 
-                ref={pelicanoContainerRef}
+                ref={macacoContainerRef}
                 className={
                     !isMounted ? 'quiz1-pelicano-mascote-initial' :
                     isCorrectAnswer ? 'quiz1-pelicano-mascote quiz1-pelicano-center' :
@@ -448,9 +448,9 @@ export const Quiz1: React.FC<Quiz1Props> = ({
             >
                 <div style={{ position: 'relative', display: 'inline-block' }}>
                     <img
-                        ref={pelicanoImgRef}
-                        src={pelicanoImg}
-                        alt="Pelicano Mascote"
+                        ref={macacoImgRef}
+                        src={macaco1Img}
+                        alt="Macaco Mascote"
                         className={isCorrectAnswer ? 'quiz1-pelicano-img-center' : ''}
                         style={{
                             height: 'auto',
@@ -458,19 +458,19 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                             maxHeight: isCorrectAnswer ? '80vh' : '100%',
                             maxWidth: isCorrectAnswer ? 'min(500px, 90vw)' : 'min(350px, 90vw)',
                             objectFit: 'contain',
-                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${pelicanoScale})`,
+                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${macacoScale})`,
                             transformOrigin: 'center center',
                             transition: isCorrectAnswer ? 'transform 1.2s ease-out, max-height 1.2s ease-out, max-width 1.2s ease-out' : 'transform 0.3s ease-out',
                             display: 'block',
                             verticalAlign: 'top'
                         }}
                     />
-                    {/* Pelicano colorido sobreposto */}
+                    {/* Macaco colorido sobreposto */}
                     <img
-                        ref={pelicanoColoredImgRef}
-                        src={pelicanoColoredImg}
-                        alt="Pelicano Colorido"
-                        className={showColoredPelicano ? 'quiz1-pelicano-colored-fade-in' : 'quiz1-pelicano-colored-hidden'}
+                        ref={macacoColoredImgRef}
+                        src={macacoColoredImg}
+                        alt="Macaco Colorido"
+                        className={showColoredMacaco ? 'quiz1-pelicano-colored-fade-in' : 'quiz1-pelicano-colored-hidden'}
                         style={{
                             position: 'absolute',
                             top: 0,
@@ -481,7 +481,7 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                             maxWidth: isCorrectAnswer ? 'min(500px, 90vw)' : 'min(350px, 90vw)',
                             objectFit: 'contain',
                             objectPosition: 'center',
-                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${pelicanoScale})`,
+                            transform: isCorrectAnswer ? 'scale(1)' : `scale(${macacoScale})`,
                             transformOrigin: 'center center',
                             pointerEvents: 'none',
                             transition: 'transform 1.2s ease-out, opacity 1.2s ease-in-out'
@@ -494,4 +494,5 @@ export const Quiz1: React.FC<Quiz1Props> = ({
     )
 }
 
-export default Quiz1
+export default Quiz2
+

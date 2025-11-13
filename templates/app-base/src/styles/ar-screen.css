@@ -26,6 +26,39 @@
     margin: 0 !important;
     padding: 0 !important;
     opacity: 1;
+    transition: opacity 0.6s ease-in;
+}
+
+/* Fade-in animation para AR Screen */
+.ar-screen-fade-out {
+    opacity: 0 !important;
+}
+
+.ar-screen-fade-in {
+    opacity: 1 !important;
+    animation: arScreenFadeIn 0.6s ease-in forwards;
+}
+
+@keyframes arScreenFadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Aplicar fade-in também no vídeo e na cena A-Frame quando a tela estiver fazendo fade-in */
+.ar-screen-fade-out #arjs-video,
+.ar-screen-fade-out a-scene {
+    opacity: 0 !important;
+    transition: opacity 0.6s ease-in;
+}
+
+.ar-screen-fade-in #arjs-video,
+.ar-screen-fade-in a-scene {
+    opacity: 1 !important;
+    transition: opacity 0.6s ease-in;
 }
 
 /* A-Frame Scene */
