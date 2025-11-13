@@ -33,9 +33,10 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
   const usarFaceTracking = config.usarFaceTracking !== false
 
   const [arLoading, setArLoading] = useState(true)
-  const [showComecarButton, setShowComecarButton] = useState(false)
   const [isFadingIn, setIsFadingIn] = useState(false)
-  const [isPortrait, setIsPortrait] = useState(false)
+  const [isPortrait, setIsPortrait] = useState(true) // Iniciar como true para mostrar tela preta imediatamente
+  const [showFadeOut, setShowFadeOut] = useState(false)
+  const fadeOutCanvasRef = useRef<HTMLCanvasElement | null>(null)
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const mediaStreamRef = useRef<MediaStream | null>(null)
@@ -48,7 +49,6 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
   }>({ handleKeyDown: null, handleKeyUp: null })
 
   // -- Círculo de debug dos binóculos (em relação ao binóculos, não mais à janela)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const binoculosImgRef = useRef<HTMLImageElement | null>(null)
   const [binoculosRect, setBinoculosRect] = useState<{left: number, top: number, width: number, height: number} | null>(null)
   const lastIsInsideRef = useRef<boolean>(false)
@@ -139,7 +139,7 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
     }
   }, [usarAFrame, arLoading, binoculosImgRef.current])
 
-  // Verificar orientação para mostrar/esconder tela preta
+  // Verificar orientação para mostrar/esconder tela preta - PRIMEIRO useEffect para executar imediatamente
   useEffect(() => {
     const checkOrientation = () => {
       const width = window.innerWidth
@@ -148,8 +148,13 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
       setIsPortrait(isCurrentlyPortrait)
     }
 
-    // Verificar orientação inicial
+    // Verificar orientação inicial IMEDIATAMENTE (síncrono, sem delay)
     checkOrientation()
+    
+    // Forçar uma verificação extra após um micro-delay para garantir
+    requestAnimationFrame(() => {
+      checkOrientation()
+    })
 
     // Listeners para mudanças de orientação
     let resizeTimeout: NodeJS.Timeout
@@ -290,6 +295,19 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
       // Não limpar aqui - deixar o vídeo para o FaceTracker
     }
   }, [usarVideo])
+
+  // Inicializar canvas de fade-out quando showFadeOut for true
+  useEffect(() => {
+    if (showFadeOut && fadeOutCanvasRef.current) {
+      fadeOutCanvasRef.current.width = window.innerWidth
+      fadeOutCanvasRef.current.height = window.innerHeight
+      // Iniciar com canvas transparente
+      const ctx = fadeOutCanvasRef.current.getContext('2d')
+      if (ctx) {
+        ctx.clearRect(0, 0, fadeOutCanvasRef.current.width, fadeOutCanvasRef.current.height)
+      }
+    }
+  }, [showFadeOut])
 
   const getBaseUrl = () => {
     const base = (import.meta as any)?.env?.BASE_URL || (document?.baseURI ? new URL(document.baseURI).pathname : '/')
@@ -564,75 +582,42 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
         macacoEl.setAttribute('position', `${newX} ${newY} ${newZ}`)
       }
 
-      // === 2D debug: projeta macaco e verifica se colide com círculos relativos ao binóculo
+      // === Verifica se macaco está dentro dos círculos (sem desenhar)
       let isInside = false
       let isInsideR = false
 
-      if (canvasRef.current) {
-        const ctx = canvasRef.current.getContext('2d')
-        if (ctx) {
-          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height)
+      // Usar a posição atual do macaco (pode ter mudado devido à rotação da câmera)
+      const screenPt = projectMacacoToScreen(macacoPositionRef.current)
 
-          // Usar a posição atual do macaco (pode ter mudado devido à rotação da câmera)
-          const screenPt = projectMacacoToScreen(macacoPositionRef.current)
+      if (screenPt) {
+        // Checa se está dentro dos círculos
+        const {centerX, centerY, radius} = getDebugCircleProps()
+        const dx = screenPt.x - centerX
+        const dy = screenPt.y - centerY
+        const dist = Math.sqrt(dx*dx + dy*dy)
+        isInside = dist <= radius
 
-          // Desenha o círculo central do binóculos
-          const {centerX, centerY, radius} = getDebugCircleProps()
-          ctx.globalAlpha = 0.5
-          ctx.beginPath()
-          ctx.arc(centerX, centerY, radius, 0, Math.PI * 2)
-          ctx.strokeStyle = 'red'
-          ctx.lineWidth = 3
-          ctx.stroke()
-          ctx.globalAlpha = 1
-
-          // Desenha o segundo círculo mais para a direita
-          const {centerX: rightX, centerY: rightY, radius: rightRadius} = getDebugCirclePropsRight()
-          ctx.globalAlpha = 0.5
-          ctx.beginPath()
-          ctx.arc(rightX, rightY, rightRadius, 0, Math.PI * 2)
-          ctx.strokeStyle = 'blue'
-          ctx.lineWidth = 3
-          ctx.stroke()
-          ctx.globalAlpha = 1
-
-          // Desenha a posição projetada do macaco
-          if (screenPt) {
-            ctx.beginPath()
-            ctx.arc(screenPt.x, screenPt.y, 12, 0, Math.PI * 2)
-            ctx.fillStyle = 'rgba(50,120,240,0.90)'
-            ctx.fill()
-
-            // Checa se está dentro dos círculos
-            const dx = screenPt.x - centerX
-            const dy = screenPt.y - centerY
-            const dist = Math.sqrt(dx*dx + dy*dy)
-            isInside = dist <= radius
-
-            if (isInside && !lastIsInsideRef.current) {
-              lastIsInsideRef.current = true
-              console.log("[DEBUG] Macaco projetado está ENTRANDO no círculo de debug dos binóculos (central)!")
-            } else if (!isInside && lastIsInsideRef.current) {
-              lastIsInsideRef.current = false
-            }
-
-            // Círculo da direita
-            const dxR = screenPt.x - rightX
-            const dyR = screenPt.y - rightY
-            const distR = Math.sqrt(dxR*dxR + dyR*dyR)
-            isInsideR = distR <= rightRadius
-
-            if (isInsideR && !lastIsInsideRefRight.current) {
-              lastIsInsideRefRight.current = true
-              console.log("[DEBUG] Macaco projetado está ENTRANDO no círculo de debug da direita dos binóculos!")
-            } else if (!isInsideR && lastIsInsideRefRight.current) {
-              lastIsInsideRefRight.current = false
-            }
-          } else {
-            lastIsInsideRef.current = false
-            lastIsInsideRefRight.current = false
-          }
+        if (isInside && !lastIsInsideRef.current) {
+          lastIsInsideRef.current = true
+        } else if (!isInside && lastIsInsideRef.current) {
+          lastIsInsideRef.current = false
         }
+
+        // Círculo da direita
+        const {centerX: rightX, centerY: rightY, radius: rightRadius} = getDebugCirclePropsRight()
+        const dxR = screenPt.x - rightX
+        const dyR = screenPt.y - rightY
+        const distR = Math.sqrt(dxR*dxR + dyR*dyR)
+        isInsideR = distR <= rightRadius
+
+        if (isInsideR && !lastIsInsideRefRight.current) {
+          lastIsInsideRefRight.current = true
+        } else if (!isInsideR && lastIsInsideRefRight.current) {
+          lastIsInsideRefRight.current = false
+        }
+      } else {
+        lastIsInsideRef.current = false
+        lastIsInsideRefRight.current = false
       }
 
       // ================================
@@ -667,13 +652,43 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
           macacoScaleRef.current = targetScale
         }
 
-        // ----------- Lógica para mostrar o botão "começar" -------------
+        // ----------- Lógica para fade-out preto após scale completo -------------
         if (
           macacoTimerRef.current >= MACACO_SCALE_TIMER_DURATION &&
           !buttonAlreadySpawnedRef.current
         ) {
-          setShowComecarButton(true)
           buttonAlreadySpawnedRef.current = true
+          // Iniciar fade-out preto
+          setShowFadeOut(true)
+          
+          // Animar o fade-out no canvas
+          let fadeProgress = 0
+          const fadeDuration = 400 // 400ms para o fade-out (mais curto)
+          const startTime = performance.now()
+          
+          const animateFadeOut = () => {
+            const currentTime = performance.now()
+            const elapsed = currentTime - startTime
+            fadeProgress = Math.min(elapsed / fadeDuration, 1)
+            
+            if (fadeOutCanvasRef.current) {
+              const ctx = fadeOutCanvasRef.current.getContext('2d')
+              if (ctx) {
+                ctx.clearRect(0, 0, fadeOutCanvasRef.current.width, fadeOutCanvasRef.current.height)
+                ctx.fillStyle = `rgba(0, 0, 0, ${fadeProgress})` // Preto
+                ctx.fillRect(0, 0, fadeOutCanvasRef.current.width, fadeOutCanvasRef.current.height)
+              }
+            }
+            
+            if (fadeProgress < 1) {
+              requestAnimationFrame(animateFadeOut)
+            } else {
+              // Ao final do fade, navegar para quiz2
+              onNavigate('quiz2', 'zoom-out', 'right')
+            }
+          }
+          
+          requestAnimationFrame(animateFadeOut)
         }
       } else {
         if (macacoLastInCircleRef.current || macacoScalingRef.current) {
@@ -687,8 +702,7 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
             macacoScaleRef.current = MACACO_INITIAL_SCALE
           }
         }
-        // Se sair dos círculos, esconde o botão
-        setShowComecarButton(false)
+        // Se sair dos círculos, reseta o flag de navegação
         buttonAlreadySpawnedRef.current = false
       }
       macacoLastInCircleRef.current = isMacacoInAnyCircle
@@ -701,9 +715,10 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
     moveMacaco()
 
     const handleResize = () => {
-      if (canvasRef.current) {
-        canvasRef.current.width = window.innerWidth
-        canvasRef.current.height = window.innerHeight
+      // Redimensionar canvas de fade-out se estiver ativo
+      if (fadeOutCanvasRef.current && showFadeOut) {
+        fadeOutCanvasRef.current.width = window.innerWidth
+        fadeOutCanvasRef.current.height = window.innerHeight
       }
     }
     window.addEventListener('resize', handleResize)
@@ -763,28 +778,43 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
   // Caminho para imagem dos binóculos para uso na tela
   const binoculosImgPath = useMemo(() => normalizePath('assets/images/binoculos.png'), [normalizePath])
 
-  // Caminho para btn-comecar
-  const btnComecarImgPath = useMemo(() => normalizePath('assets/images/btn-comecar.png'), [normalizePath])
-
   // Ao exibir overlay dos binóculos, desenha também o círculo no mesmo local
   return (
     <div className={`ar-game-screen ${isFadingIn ? 'ar-screen-fade-in' : 'ar-screen-fade-out'}`}>
       {/* Landscape Enforcer - força orientação landscape */}
       <LandscapeEnforcer enabled={true} />
       
-      {/* Tela preta quando em portrait - cobre tudo incluindo a câmera */}
-      {isPortrait && (
-        <div
+      {/* Tela preta quando em portrait - cobre tudo incluindo a câmera - SEMPRE renderizar para evitar flash */}
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: '#000000',
+          zIndex: 999999998,
+          pointerEvents: 'none',
+          opacity: isPortrait ? 1 : 0,
+          transition: 'opacity 0.2s ease-out',
+          visibility: isPortrait ? 'visible' : 'hidden'
+        }}
+      />
+      
+      {/* Canvas para fade-out preto */}
+      {showFadeOut && (
+        <canvas
+          ref={fadeOutCanvasRef}
+          width={typeof window !== 'undefined' ? window.innerWidth : 1920}
+          height={typeof window !== 'undefined' ? window.innerHeight : 1080}
           style={{
             position: 'fixed',
             top: 0,
             left: 0,
             width: '100vw',
             height: '100vh',
-            backgroundColor: '#000000',
-            zIndex: 999999998,
-            pointerEvents: 'none',
-            transition: 'opacity 0.3s ease-out'
+            zIndex: 999999999,
+            pointerEvents: 'none'
           }}
         />
       )}
@@ -849,56 +879,9 @@ export const ARScreen2: React.FC<ARScreen2Props> = ({
             }}
           />
           }
-          {/* Canvas de overlay para círculos de debug */}
-          <canvas
-            ref={canvasRef}
-            width={typeof window !== 'undefined' ? window.innerWidth : 1920}
-            height={typeof window !== 'undefined' ? window.innerHeight : 1080}
-            style={{
-              position: 'fixed',
-              left: 0,
-              top: 0,
-              width: '100vw',
-              height: '100vh',
-              pointerEvents: 'none',
-              zIndex: 999999,
-            }}
-          />
         </div>
       )}
 
-      {/* Botão "Começar" - centralizado horizontalmente, mas cerca de 30% abaixo do topo da tela */}
-      {showComecarButton && (
-        <button
-          onClick={() => onNavigate('quiz2', 'zoom-out', 'up')}
-          style={{
-            position: 'fixed',
-            left: '50%',
-            top: '62%', // ~a little bit below center vertically
-            transform: 'translate(-50%, -50%)',
-            zIndex: 9999999,
-            background: 'none',
-            border: 'none',
-            outline: 'none',
-            padding: 0,
-            cursor: 'pointer',
-            pointerEvents: 'auto'
-          }}
-        >
-          <img
-            src={btnComecarImgPath}
-            alt="Começar"
-            draggable={false}
-            style={{
-              width: '240px',
-              height: 'auto',
-              display: 'block',
-              pointerEvents: 'auto',
-              userSelect: 'none'
-            }}
-          />
-        </button>
-      )}
 
       {/* Face Tracker (se habilitado) */}
       {usarFaceTracking && (

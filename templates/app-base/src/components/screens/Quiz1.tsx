@@ -261,11 +261,6 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         position: 'fixed',
                         top: 20,
                         left: '50%',
-                        width: 'auto',
-                        height: 'auto',
-                        maxWidth: 'min(300px, 80vw)',
-                        maxHeight: '20vh',
-                        objectFit: 'contain',
                         zIndex: 20,
                         pointerEvents: 'none'
                     }}
@@ -306,8 +301,6 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         src={enunciadoImg}
                         alt="Enunciado"
                         style={{
-                            width: '100%',
-                            height: 'auto',
                             display: 'block',
                             margin: '0 auto',
                             boxShadow: '0 2px 12px rgba(0,0,0,0.07)'
@@ -353,8 +346,6 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         src={galinhaImg}
                         alt="Galinha"
                         style={{
-                            width: '100%',
-                            height: 'auto',
                             borderRadius: 18,
                             boxShadow: '0 3px 12px rgba(40,40,40,0.07)'
                         }}
@@ -384,8 +375,6 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         src={macacoImg}
                         alt="Macaco"
                         style={{
-                            width: '100%',
-                            height: 'auto',
                             borderRadius: 18,
                             boxShadow: '0 3px 12px rgba(40,40,40,0.07)'
                         }}
@@ -415,8 +404,6 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         src={pelicanoRImg}
                         alt="Pelicano"
                         style={{
-                            width: '100%',
-                            height: 'auto',
                             borderRadius: 18,
                             boxShadow: '0 3px 12px rgba(40,40,40,0.07)'
                         }}
@@ -453,14 +440,9 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                         alt="Pelicano Mascote"
                         className={isCorrectAnswer ? 'quiz1-pelicano-img-center' : ''}
                         style={{
-                            height: 'auto',
-                            width: 'auto',
-                            maxHeight: isCorrectAnswer ? '80vh' : '100%',
-                            maxWidth: isCorrectAnswer ? 'min(500px, 90vw)' : 'min(350px, 90vw)',
-                            objectFit: 'contain',
                             transform: isCorrectAnswer ? 'scale(1)' : `scale(${pelicanoScale})`,
                             transformOrigin: 'center center',
-                            transition: isCorrectAnswer ? 'transform 1.2s ease-out, max-height 1.2s ease-out, max-width 1.2s ease-out' : 'transform 0.3s ease-out',
+                            transition: isCorrectAnswer ? 'transform 1.2s ease-out' : 'transform 0.3s ease-out',
                             display: 'block',
                             verticalAlign: 'top'
                         }}
@@ -475,11 +457,6 @@ export const Quiz1: React.FC<Quiz1Props> = ({
                             position: 'absolute',
                             top: 0,
                             left: 0,
-                            height: 'auto',
-                            width: 'auto',
-                            maxHeight: isCorrectAnswer ? '80vh' : '100%',
-                            maxWidth: isCorrectAnswer ? 'min(500px, 90vw)' : 'min(350px, 90vw)',
-                            objectFit: 'contain',
                             objectPosition: 'center',
                             transform: isCorrectAnswer ? 'scale(1)' : `scale(${pelicanoScale})`,
                             transformOrigin: 'center center',

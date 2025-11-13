@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import type { ScreenType, TransitionType, TransitionDirection } from '../../types/screens'
 import '../../styles/result-screen.css'
 
@@ -12,35 +12,7 @@ interface ResultScreenProps {
 export const ResultScreen: React.FC<ResultScreenProps> = ({
     onNavigate
 }) => {
-    const [resultType, setResultType] = useState<'acerto' | 'erro' | null>(null)
-
-    useEffect(() => {
-        // Ler dados do resultado do localStorage - verificar múltiplas vezes se necessário
-        const checkResult = (attempt = 0) => {
-            const result = localStorage.getItem('ar-result') as 'acerto' | 'erro' | null
-
-            console.log(`Tentativa ${attempt + 1}: resultado no localStorage =`, result)
-            console.log('Todos os itens:', {
-                result: localStorage.getItem('ar-result'),
-                score: localStorage.getItem('ar-score'),
-                progress: localStorage.getItem('ar-progress')
-            })
-
-            if (result === 'acerto' || result === 'erro') {
-                setResultType(result)
-            } else if (attempt < 5) {
-                // Tentar novamente até 5 vezes (500ms total)
-                setTimeout(() => checkResult(attempt + 1), 100)
-            } else {
-                // Só navegar para cover se realmente não houver resultado após todas as tentativas
-                console.error('Resultado não encontrado no localStorage após múltiplas tentativas, voltando para cover')
-                onNavigate('cover', 'zoom-in', 'left')
-            }
-        }
-
-        // Começar a verificar imediatamente
-        checkResult(0)
-    }, [onNavigate])
+    const [clickedEmoji, setClickedEmoji] = useState<string | null>(null)
 
     // Get base URL
     const getBaseUrl = () => {
@@ -60,27 +32,19 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
 
     const images = {
         bgCapa: normalizePath('assets/images/bg-capa.png'),
-        modalAcerto: normalizePath('assets/images/modal-acerto.png'),
-        modalErro: normalizePath('assets/images/modal-erro.png'),
-        btnRegistrar: normalizePath('assets/images/btn-registrar.png'),
-        btnInicio: normalizePath('assets/images/btn-inicio.png'),
-        btnVoltar: normalizePath('assets/images/btn-voltar.png')
+        parabens: normalizePath('assets/images/parabens.png'),
+        modalfinal: normalizePath('assets/images/modalfinal.png'),
+        emoji1: normalizePath('assets/images/emoji1.png'),
+        emoji2: normalizePath('assets/images/emoji2.png'),
+        emoji3: normalizePath('assets/images/emoji3.png')
     }
 
-    const handleRegistrar = () => {
-        onNavigate('selfie', 'fade', 'up')
-    }
-
-    const handleInicio = () => {
-        onNavigate('cover', 'zoom-in', 'left')
-    }
-
-    const handleVoltar = () => {
-        onNavigate('ar', 'fade', 'left')
-    }
-
-    if (!resultType) {
-        return null
+    const handleEmojiClick = (emojiId: string) => {
+        setClickedEmoji(emojiId)
+        // Após a animação de scale, navegar para CoverScreen
+        setTimeout(() => {
+            onNavigate('cover', 'zoom-in', 'left')
+        }, 400)
     }
 
     return (
@@ -90,59 +54,109 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({
                 backgroundImage: `url("${images.bgCapa}")`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
+                backgroundRepeat: 'no-repeat',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '100vw',
+                height: '100vh',
+                padding: '20px',
+                boxSizing: 'border-box'
             }}
         >
-            <div className="result-content">
-                <img
-                    src={resultType === 'acerto' ? images.modalAcerto : images.modalErro}
-                    alt={resultType === 'acerto' ? 'Acerto' : 'Erro'}
-                    className="result-modal-image"
-                />
+            {/* Imagem "parabens" no topo */}
+            <img
+                src={images.parabens}
+                alt="Parabéns"
+                style={{
+                    marginBottom: '20px',
+                    marginTop: '20px'
+                }}
+            />
 
-                {/* Botões para acerto */}
-                {resultType === 'acerto' && (
-                    <div className="result-modal-buttons">
-                        <button
-                            className="result-button result-button-registrar"
-                            onClick={handleRegistrar}
-                            style={{
-                                backgroundImage: `url(${images.btnRegistrar})`,
-                                backgroundSize: 'contain',
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center'
-                            }}
-                        />
-                        <button
-                            className="result-button result-button-inicio"
-                            onClick={handleInicio}
-                            style={{
-                                backgroundImage: `url(${images.btnInicio})`,
-                                backgroundSize: 'contain',
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center'
-                            }}
-                        />
-                    </div>
-                )}
+            {/* Imagem "modalfinal" no centro */}
+            <img
+                src={images.modalfinal}
+                alt="Modal Final"
+                style={{
+                    marginBottom: '40px' // aumentado para dar mais espaço acima dos emojis
+                }}
+            />
 
-                {/* Botão para erro */}
-                {resultType === 'erro' && (
-                    <div className="result-modal-buttons">
-                        <button
-                            className="result-button result-button-voltar"
-                            onClick={handleVoltar}
-                            style={{
-                                backgroundImage: `url(${images.btnVoltar})`,
-                                backgroundSize: 'contain',
-                                backgroundRepeat: 'no-repeat',
-                                backgroundPosition: 'center'
-                            }}
-                        />
-                    </div>
-                )}
+            {/* 3 emojis alinhados horizontalmente, com margem inferior para afastar do rodapé */}
+            <div
+                style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    width: '100%',
+                    maxWidth: '600px',
+                    marginBottom: '100px' // espaço extra abaixo dos emojis
+                }}
+            >
+                <button
+                    onClick={() => handleEmojiClick('emoji1')}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        transform: clickedEmoji === 'emoji1' ? 'scale(1.1)' : 'scale(1)',
+                        transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}
+                >
+                    <img
+                        src={images.emoji1}
+                        alt="Emoji 1"
+                        style={{
+                            // sem restrição de tamanho
+                        }}
+                    />
+                </button>
+
+                <button
+                    onClick={() => handleEmojiClick('emoji2')}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        transform: clickedEmoji === 'emoji2' ? 'scale(1.1)' : 'scale(1)',
+                        transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}
+                >
+                    <img
+                        src={images.emoji2}
+                        alt="Emoji 2"
+                        style={{
+                            // sem restrição de tamanho
+                        }}
+                    />
+                </button>
+
+                <button
+                    onClick={() => handleEmojiClick('emoji3')}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        padding: 0,
+                        cursor: 'pointer',
+                        transform: clickedEmoji === 'emoji3' ? 'scale(1.1)' : 'scale(1)',
+                        transition: 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                    }}
+                >
+                    <img
+                        src={images.emoji3}
+                        alt="Emoji 3"
+                        style={{
+                            // sem restrição de tamanho
+                        }}
+                    />
+                </button>
             </div>
         </div>
     )
 }
-

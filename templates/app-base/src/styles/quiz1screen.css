@@ -251,6 +251,8 @@
 /* ===== ANIMAÇÃO DO PELICANO TOP ===== */
 
 .quiz1-pelicano-top {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-100px);
   animation: quiz1-pelicano-top-slide-down 0.8s ease-out forwards;
 }
 

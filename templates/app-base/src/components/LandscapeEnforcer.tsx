@@ -61,7 +61,7 @@ export const LandscapeEnforcer: React.FC<LandscapeEnforcerProps> = ({ enabled = 
       }, 300)
     }
 
-    const handleMediaQueryChange = (e: MediaQueryListEvent) => {
+    const handleMediaQueryChange = () => {
       clearTimeout(orientationTimeout)
       orientationTimeout = setTimeout(() => {
         checkOrientation()
@@ -124,7 +124,8 @@ export const LandscapeEnforcer: React.FC<LandscapeEnforcerProps> = ({ enabled = 
         textAlign: 'center',
         padding: '20px',
         boxSizing: 'border-box',
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        animation: 'fadeInScale 0.3s ease-out'
       }}
     >
       {/* Ícone de rotação */}
@@ -153,6 +154,16 @@ export const LandscapeEnforcer: React.FC<LandscapeEnforcerProps> = ({ enabled = 
       {/* CSS para animação */}
       <style>
         {`
+          @keyframes fadeInScale {
+            0% {
+              opacity: 0;
+              transform: scale(0.95);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1);
+            }
+          }
           @keyframes rotate-landscape {
             0%, 100% { transform: rotate(90deg); }
             50% { transform: rotate(0deg); }
